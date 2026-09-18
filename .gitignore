@@ -1,0 +1,23 @@
+# Godot
+game/.godot/
+game/export_presets.cfg.secret
+*.translation
+__pycache__/
+
+# Build artifacts
+build/
+game/build/
+release-artifacts/
+tmp/
+*.aab
+*.apk
+*.ipa
+*.xcarchive
+
+# OS
+.DS_Store
+
+# Secrets — 서명 키와 자격증명은 절대 커밋하지 않는다
+*.keystore
+*.p12
+*.mobileprovision

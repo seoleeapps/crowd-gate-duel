@@ -1,0 +1,6 @@
+# 버전 고정: 로컬과 CI가 같은 도구를 쓴다.
+# 사내 원장(global-versions.yaml)의 godot 4.7.2 stable 과 일치한다.
+godot: 4.7.2-stable
+renderer: gl_compatibility
+prng: pcg32 (사내 matgo 구현 재사용, 골든 테스트 포함)
+determinism: 정수 연산만 사용. 규칙 판정에 부동소수점을 쓰지 않는다
