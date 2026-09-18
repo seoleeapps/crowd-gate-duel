@@ -99,13 +99,16 @@ static func pick(
 
 
 ## 뒤처져 있으면 상대가 고를 칸을 노려 우선권으로 가로챈다.
-## 앞서 있으면 그 칸을 피해 내 기준 차선을 온전히 먹는다.
+## 앞서 있거나 동수면 그 칸을 피해 내 기준 차선을 온전히 먹는다.
+##
+## 동수에서도 피하는 이유가 중요하다. 동수에 겹치면 양쪽이 반감이라 격차가 그대로 유지되고,
+## 두 전략이 같은 판단을 하면 판 끝까지 동수인 채 무승부로 끝난다. 실제로 동수에서 상대를
+## 따라가도록 두자 표본 대국이 7구간 내내 겹침·동수로 흘러 승부가 나지 않았다.
+## 피해서 먼저 차이를 만들면 그 다음부터 우선권 규칙이 작동하기 시작한다.
 static func _leader_aware(gates: Array[Gate], crowd_me: int, crowd_opp: int) -> int:
 	var opp_best: int = _extreme(gates, crowd_opp, crowd_me, true)
 	if crowd_me < crowd_opp:
 		return opp_best
-	if crowd_me == crowd_opp:
-		return _extreme(gates, crowd_me, crowd_opp, true)
 	var best: int = -1
 	var best_gain: int = -0x7FFFFFFF
 	for i: int in range(gates.size()):
