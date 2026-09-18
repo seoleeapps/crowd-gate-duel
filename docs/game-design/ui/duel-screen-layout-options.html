@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  /* Artifact 런타임이 제공하던 기본값을 직접 선언한다. 브라우저에서 파일을 바로 열 수 있어야 한다. */
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-size: 14px; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>갈림길 대국 화면 배치안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --ink: #24211d;
+    --ink-soft: #55504a;
+    --ink-faint: #8a847c;
+    --ground: #f5f3ef;
+    --panel: #fffefb;
+    --rule: #ddd8d0;
+    --rule-strong: #b9b2a8;
+    --mine: #b8500f;
+    --mine-wash: #f6e4d7;
+    --theirs: #0e6f66;
+    --theirs-wash: #d9ebe8;
+    --flag: #7a6a50;
+    --sans: "Noto Sans KR", system-ui, -apple-system, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #ece7df;
+      --ink-soft: #b3aca2;
+      --ink-faint: #837c72;
+      --ground: #16150f;
+      --panel: #201e18;
+      --rule: #37342c;
+      --rule-strong: #565044;
+      --mine: #e8823f;
+      --mine-wash: #3a2416;
+      --theirs: #46b3a6;
+      --theirs-wash: #13332f;
+      --flag: #a89272;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #ece7df;
+    --ink-soft: #b3aca2;
+    --ink-faint: #837c72;
+    --ground: #16150f;
+    --panel: #201e18;
+    --rule: #37342c;
+    --rule-strong: #565044;
+    --mine: #e8823f;
+    --mine-wash: #3a2416;
+    --theirs: #46b3a6;
+    --theirs-wash: #13332f;
+    --flag: #a89272;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; padding-block: 40px 64px; }
+
+  header.intro { border-bottom: 1px solid var(--rule); padding-bottom: 28px; margin-bottom: 36px; }
+  h1 { font-size: clamp(24px, 4vw, 34px); font-weight: 700; margin: 0 0 6px; letter-spacing: -0.02em; text-wrap: balance; }
+  .sub { color: var(--ink-soft); margin: 0 0 20px; max-width: 62ch; }
+  .situation {
+    display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 14px 16px;
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 4px;
+    font-family: var(--mono); font-size: 12.5px; color: var(--ink-soft);
+  }
+  .situation b { color: var(--ink); font-weight: 600; }
+
+  .decision {
+    margin: 28px 0 0; padding: 16px 18px; border-left: 3px solid var(--mine);
+    background: var(--mine-wash); border-radius: 0 4px 4px 0;
+  }
+  .decision p { margin: 0; font-size: 14.5px; }
+  .decision strong { font-weight: 700; }
+
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 28px; align-items: start; }
+
+  .opt { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+  .opt > header { padding: 16px 18px 12px; border-bottom: 1px solid var(--rule); }
+  .opt h2 { margin: 0 0 3px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+  .opt .tag { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
+  .opt .rank-how { margin: 8px 0 0; font-size: 13px; color: var(--ink-soft); }
+  .opt .rank-how b { color: var(--mine); font-weight: 600; }
+
+  /* phone frame */
+  .phone { padding: 18px; display: flex; justify-content: center; }
+  .screen {
+    width: 100%; max-width: 230px; aspect-ratio: 9 / 16;
+    border: 2px solid var(--rule-strong); border-radius: 14px;
+    display: flex; flex-direction: column; overflow: hidden; background: var(--ground);
+  }
+  .zone { position: relative; border-bottom: 1px dashed var(--rule); padding: 4px 6px; }
+  .zone:last-child { border-bottom: 0; }
+  .zlab {
+    position: absolute; top: 3px; right: 5px; font-family: var(--mono);
+    font-size: 8px; color: var(--ink-faint); letter-spacing: 0.02em;
+  }
+
+  .topbar { flex: 0 0 9%; display: flex; align-items: center; gap: 5px; }
+  .pill { font-family: var(--mono); font-size: 8.5px; color: var(--ink-soft); border: 1px solid var(--rule); border-radius: 10px; padding: 1px 5px; }
+  .pause { margin-left: auto; width: 13px; height: 13px; border: 1px solid var(--rule-strong); border-radius: 3px; }
+
+  .field { flex: 1 1 auto; display: flex; overflow: hidden; }
+
+  /* crowd column */
+  .lane { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 3px; padding-bottom: 4px; }
+  .count { font-family: var(--mono); font-weight: 600; font-size: 13px; }
+  .count.me { color: var(--mine); }
+  .count.you { color: var(--theirs); }
+  .blob { border-radius: 3px 3px 1px 1px; width: 76%; }
+  .blob.me { background: var(--mine-wash); border: 1px solid var(--mine); }
+  .blob.you { background: var(--theirs-wash); border: 1px solid var(--theirs); }
+  .laneName { font-family: var(--mono); font-size: 7.5px; color: var(--ink-faint); }
+
+  .gates { flex: 0 0 21%; display: flex; gap: 4px; align-items: stretch; padding: 5px 6px; }
+  .gate {
+    flex: 1; border: 1px solid var(--rule-strong); border-radius: 3px; background: var(--panel);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  }
+  .gate .gi { width: 11px; height: 11px; border: 1.4px solid var(--ink-soft); }
+  .gate .gi.mul { border-radius: 50%; }
+  .gate .gi.add { border-radius: 2px; }
+  .gate .gi.steal { transform: rotate(45deg); border-radius: 1px; }
+  .gate .gv { font-family: var(--mono); font-size: 8.5px; font-weight: 600; }
+  .timer { flex: 0 0 7%; display: flex; align-items: center; padding: 0 6px; gap: 5px; }
+  .timer .zlab, .gauge .zlab { display: none; }  /* 좁은 띠라 내용과 겹친다. 비율은 범례에 적었다 */
+  .track { flex: 1; height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+  .track i { display: block; height: 100%; width: 62%; background: var(--ink-soft); }
+  .tnum { font-family: var(--mono); font-size: 8px; color: var(--ink-soft); }
+
+  /* B: single hill */
+  .hill { flex: 1 1 auto; position: relative; padding: 6px; }
+  .hillTrack { position: absolute; inset: 8px 10px; border-left: 1px solid var(--rule); }
+  .marker { position: absolute; left: 10px; right: 10px; display: flex; align-items: center; gap: 4px; }
+  .marker .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .marker.me .dot { background: var(--mine-wash); border: 1.5px solid var(--mine); }
+  .marker.you .dot { background: var(--theirs-wash); border: 1.5px solid var(--theirs); }
+  .marker .m { font-family: var(--mono); font-size: 9px; font-weight: 600; }
+  .marker.me .m { color: var(--mine); }
+  .marker.you .m { color: var(--theirs); }
+  .summit { position: absolute; top: 6px; left: 10px; right: 10px; border-top: 1.5px solid var(--flag); }
+  .summitLab { position: absolute; top: 8px; left: 10px; font-family: var(--mono); font-size: 7px; color: var(--flag); }
+
+  /* C: mine-focused */
+  .mini { flex: 0 0 15%; display: flex; align-items: center; gap: 5px; padding: 0 34px 0 7px; background: var(--theirs-wash); }
+  .miniBlob { height: 13px; width: 26px; border: 1px solid var(--theirs); border-radius: 2px; background: var(--panel); }
+  .gauge { flex: 0 0 7%; display: flex; align-items: center; padding: 0 7px; gap: 4px; }
+  .gtrack { flex: 1; height: 7px; border: 1px solid var(--rule-strong); border-radius: 4px; display: flex; overflow: hidden; }
+  .gtrack .gm { background: var(--mine); }
+  .gtrack .gy { background: var(--theirs); }
+  .glab { font-family: var(--mono); font-size: 7.5px; color: var(--mine); font-weight: 600; }
+  .bigMine { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 3px; padding-bottom: 5px; }
+
+  .notes { padding: 4px 18px 18px; }
+  .notes dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13px; }
+  .notes dt { font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; padding-top: 3px; }
+  .notes dd { margin: 0; color: var(--ink-soft); }
+  .notes dd.good { color: var(--ink); }
+
+  .legend { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--rule); }
+  .legend h3 { font-size: 15px; margin: 0 0 10px; }
+  .legend ul { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 14px; }
+  .legend li { margin-bottom: 5px; }
+  .legend b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="intro">
+    <h1>갈림길 대국 화면 배치안</h1>
+    <p class="sub">
+      색과 아트를 빼고 <b>공간 구성만</b> 비교한다. 세 안 모두 같은 순간을 그렸고, 수치와 문구는 실제 규칙에서 가져왔다.
+    </p>
+    <div class="situation">
+      <span><b>4구간</b> / 7</span>
+      <span>내 군중 <b>44</b></span>
+      <span>상대 <b>31</b></span>
+      <span>확약 <b>2.1초</b> 남음</span>
+      <span>게이트 <b>×1.6 · +28 · 훔치기 20%</b></span>
+    </div>
+    <div class="decision">
+      <p>
+        <strong>지금 나는 앞서 있다.</strong> 겹치면 뒤처진 상대가 게이트를 온전히 가져가므로,
+        이 순간의 올바른 판단은 <strong>상대가 고를 칸을 피하는 것</strong>이다.
+        그래서 화면은 “내가 앞서는가 뒤처지는가”를 <strong>수치를 읽기 전에</strong> 알려줘야 한다.
+        세 안의 진짜 차이는 그 정보를 어디에 싣느냐다.
+      </p>
+    </div>
+  </header>
+
+  <div class="options">
+
+    <!-- A -->
+    <section class="opt">
+      <header>
+        <div class="tag">A안</div>
+        <h2>나란한 두 레인</h2>
+        <p class="rank-how">순위를 <b>무리 크기 차이</b>로 읽는다</p>
+      </header>
+      <div class="phone">
+        <div class="screen">
+          <div class="zone topbar">
+            <span class="zlab">9%</span>
+            <span class="pill">4 / 7</span>
+            <span class="pause"></span>
+          </div>
+          <div class="zone field" style="flex:1 1 auto">
+            <span class="zlab">63%</span>
+            <div class="lane">
+              <div class="count me">44</div>
+              <div class="blob me" style="height:52%"></div>
+              <div class="laneName">나</div>
+            </div>
+            <div class="lane">
+              <div class="count you">31</div>
+              <div class="blob you" style="height:37%"></div>
+              <div class="laneName">상대</div>
+            </div>
+          </div>
+          <div class="zone gates">
+            <span class="zlab">21%</span>
+            <div class="gate"><span class="gi mul"></span><span class="gv">×1.6</span></div>
+            <div class="gate"><span class="gi add"></span><span class="gv">+28</span></div>
+            <div class="gate"><span class="gi steal"></span><span class="gv">20%</span></div>
+          </div>
+          <div class="zone timer">
+            <span class="zlab">7%</span>
+            <div class="track"><i></i></div>
+            <span class="tnum">2.1</span>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <dl>
+          <dt>강점</dt>
+          <dd class="good">대칭이라 공정해 보인다. 무리가 불어나는 장면이 양쪽 다 크게 보여 클립으로 쓰기 좋다.</dd>
+          <dt>약점</dt>
+          <dd>격차가 작을 때 순위가 <b>즉시 읽히지 않는다</b>. 44와 31은 구분되지만 44와 41은 3초 안에 판단하기 어렵다.</dd>
+          <dt>구현</dt>
+          <dd>가장 단순하다. 레인 두 개와 인스턴싱 하나면 끝난다.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- B -->
+    <section class="opt">
+      <header>
+        <div class="tag">B안</div>
+        <h2>하나의 언덕길</h2>
+        <p class="rank-how">순위를 <b>트랙 위 위치</b>로 읽는다</p>
+      </header>
+      <div class="phone">
+        <div class="screen">
+          <div class="zone topbar">
+            <span class="zlab">9%</span>
+            <span class="pill">4 / 7</span>
+            <span class="pause"></span>
+          </div>
+          <div class="zone hill" style="flex:1 1 auto">
+            <span class="zlab">63%</span>
+            <div class="summit"></div>
+            <div class="summitLab">정상</div>
+            <div class="hillTrack"></div>
+            <div class="marker me" style="top:34%">
+              <span class="dot"></span><span class="m">나 44</span>
+            </div>
+            <div class="marker you" style="top:56%">
+              <span class="dot"></span><span class="m">상대 31</span>
+            </div>
+          </div>
+          <div class="zone gates">
+            <span class="zlab">21%</span>
+            <div class="gate"><span class="gi mul"></span><span class="gv">×1.6</span></div>
+            <div class="gate"><span class="gi add"></span><span class="gv">+28</span></div>
+            <div class="gate"><span class="gi steal"></span><span class="gv">20%</span></div>
+          </div>
+          <div class="zone timer">
+            <span class="zlab">7%</span>
+            <div class="track"><i></i></div>
+            <span class="tnum">2.1</span>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <dl>
+          <dt>강점</dt>
+          <dd class="good">순위가 <b>위치</b>라서 숫자를 읽기 전에 안다. 정상을 향해 오른다는 판타지와 화면이 일치하고, 결승 충돌이 같은 공간에서 자연스럽게 일어난다.</dd>
+          <dt>약점</dt>
+          <dd>군중 수와 위치를 동시에 표현해야 한다. 격차가 크게 벌어지면 한쪽이 화면 밖으로 밀려 보정 규칙이 필요하다.</dd>
+          <dt>구현</dt>
+          <dd>위치 매핑에 곡선이 하나 더 든다. 군중 규모가 지수적으로 커지므로 로그 스케일이 필요하다.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- C -->
+    <section class="opt">
+      <header>
+        <div class="tag">C안</div>
+        <h2>내 무리 중심</h2>
+        <p class="rank-how">순위를 <b>전용 저울</b>로 읽는다</p>
+      </header>
+      <div class="phone">
+        <div class="screen">
+          <div class="zone topbar">
+            <span class="zlab">9%</span>
+            <span class="pill">4 / 7</span>
+            <span class="pause"></span>
+          </div>
+          <div class="zone mini">
+            <span class="zlab">15%</span>
+            <div class="miniBlob"></div>
+            <span class="count you" style="font-size:11px">31</span>
+            <span class="laneName">상대</span>
+          </div>
+          <div class="zone gauge">
+            <span class="zlab">7%</span>
+            <div class="gtrack">
+              <i class="gm" style="width:59%"></i><i class="gy" style="width:41%"></i>
+            </div>
+            <span class="glab">앞섬</span>
+          </div>
+          <div class="zone bigMine" style="flex:1 1 auto">
+            <span class="zlab">41%</span>
+            <div class="count me" style="font-size:16px">44</div>
+            <div class="blob me" style="height:60%;width:62%"></div>
+            <div class="laneName">나</div>
+          </div>
+          <div class="zone gates">
+            <span class="zlab">21%</span>
+            <div class="gate"><span class="gi mul"></span><span class="gv">×1.6</span></div>
+            <div class="gate"><span class="gi add"></span><span class="gv">+28</span></div>
+            <div class="gate"><span class="gi steal"></span><span class="gv">20%</span></div>
+          </div>
+          <div class="zone timer">
+            <span class="zlab">7%</span>
+            <div class="track"><i></i></div>
+            <span class="tnum">2.1</span>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <dl>
+          <dt>강점</dt>
+          <dd class="good">순위를 <b>저울 하나로 못박아</b> 오해가 없다. 내 무리가 커서 성장의 쾌감이 가장 크게 느껴진다.</dd>
+          <dt>약점</dt>
+          <dd>상대가 작아 대전 상대라는 실감이 약하다. 영역이 다섯으로 쪼개져 화면이 관리 패널에 가까워질 위험이 있다.</dd>
+          <dt>구현</dt>
+          <dd>구성요소가 가장 많다. 저울과 미니 레인의 상태를 따로 관리해야 한다.</dd>
+        </dl>
+      </div>
+    </section>
+
+  </div>
+
+  <section class="legend">
+    <h3>세 안이 공통으로 지키는 것</h3>
+    <ul>
+      <li><b>게이트는 색이 아니라 모양으로</b> 구분한다. 원은 불리기, 사각은 모으기, 마름모는 빼앗기다. 색은 진영 표시에만 쓴다.</li>
+      <li><b>게이트 띠 21%</b>는 세 안 모두 같다. 3초 안에 눌러야 하므로 터치 대상이 가장 큰 영역이어야 한다.</li>
+      <li><b>수치 전용 패널을 두지 않는다.</b> 읽어야 하는 숫자는 양쪽 군중 수와 남은 구간뿐이다.</li>
+      <li>판 진행 중 광고 요소가 <b>0개</b>다. 일시정지 버튼 하나만 예외다.</li>
+      <li>화면 안 숫자는 각 영역이 차지하는 <b>세로 비율</b>이다. 확약 타이머는 세 안 모두 7%,
+        C안의 순위 저울도 7%이며, 좁은 띠라 프레임 안에 라벨을 넣지 않았다.</li>
+    </ul>
+  </section>
+</div>
+
+</body>
+</html>
