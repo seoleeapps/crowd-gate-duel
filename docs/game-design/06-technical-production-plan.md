@@ -139,14 +139,20 @@ A-1 스타일 확정(`04` 승인 게이트)은 3주차 시작 전에 통과해�
 사내 Godot 게임 저장소 관례를 따른다. 승인 전이므로 저장소를 만들지 않고, 승인 시점에 아래
 진입점을 갖춘 구조로 승격한다.
 
-| 목적 | 진입점 |
-| --- | --- |
-| 헤드리스 테스트 | `scripts/test.sh` — domain 단위 테스트와 인수 시나리오 자동 부분 |
-| 생성기 대량 검증 | `scripts/validate_courses.sh --seeds 10000` — AC-002 |
-| 전략 승률 행렬 | `scripts/strategy_matrix.sh --rounds 1000` — AC-004 |
-| 리플레이 재현 검증 | `scripts/replay_check.sh` — AC-003, AC-005 |
-| 디버그 빌드 | `scripts/build.sh --debug` — application ID 는 `com.seorilabs.crowdgateduel.debug` |
-| 정적 검사 | `scripts/lint.sh` — GDScript 엄격 타입 검사 |
+| 목적 | 진입점 | 상태 |
+| --- | --- | --- |
+| 헤드리스 테스트 | `scripts/test.sh` — 도메인 테스트 전부. AC-003 과 AC-005 의 재현 검증을 포함한다 | 구현됨 |
+| 생성기 대량 검증 | `scripts/validate_courses.sh --seeds 10000` — AC-002 | 구현됨 |
+| 전략 승률 행렬 | `scripts/strategy_matrix.sh --courses 40` — AC-004 참고 지표 | 구현됨 |
+| 정적 검사 | `scripts/lint.sh` — 임포트와 스크립트 컴파일. CI 게이트와 같은 범위 | 구현됨 |
+| 디버그 빌드 | `scripts/build.sh --debug` — application ID 는 `com.seorilabs.crowdgateduel.debug` | 화면 구현 후 |
+
+리플레이 재현은 별도 스크립트를 두지 않고 `test.sh` 안의 결정론 스위트가 담당한다.
+같은 판정 코드가 대국과 재생 양쪽을 처리하므로 검증 경로를 나눌 이유가 없다.
+
+Godot 헤드리스는 스크립트 오류가 있어도 종료 코드 0 을 낼 수 있다. 모든 진입점은
+`scripts/_godot.sh` 를 통해 로그의 `SCRIPT ERROR` 와 `ERROR:` 를 함께 검사하고,
+`timeout` 이 있는 환경에서는 명령 단위 타임아웃을 건다.
 
 CI 는 main 에서 정적 검사와 헤드리스 테스트만 돌리는 사내 표준 게이트를 따르고, 마켓 업로드는
 명시적 릴리스에서만 수행한다.
