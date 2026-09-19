@@ -19,7 +19,7 @@ concurrency:
 jobs:
   compile:
     name: Godot Compile
-    runs-on: seorilabs-rpi-arm64
+    runs-on: seorilabs-x64
     timeout-minutes: 25
 
     steps:
@@ -71,17 +71,25 @@ jobs:
             exit 0
           fi
 
+          # 러너 아키텍처에 따라 자산을 고른다. 이 fallback 이 arm64 로 고정돼 있으면
+          # x64 러너에서 실행 불가능한 바이너리를 받는다.
+          case "$(uname -m)" in
+            aarch64|arm64) godot_arch="arm64" ;;
+            x86_64|amd64) godot_arch="x86_64" ;;
+            *) echo "Unsupported runner architecture: $(uname -m)" >&2; exit 1 ;;
+          esac
+
           install_dir="${RUNNER_TEMP}/godot"
           archive="${install_dir}/godot.zip"
-          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.arm64.zip"
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.${godot_arch}.zip"
 
           mkdir -p "${install_dir}" "${HOME}/.local/bin"
           curl -fsSL "${url}" -o "${archive}"
           unzip -q "${archive}" -d "${install_dir}"
 
-          binary="$(find "${install_dir}" -maxdepth 2 -type f -name 'Godot_*_linux.arm64' -print -quit)"
+          binary="$(find "${install_dir}" -maxdepth 2 -type f -name "Godot_*_linux.${godot_arch}" -print -quit)"
           if [ -z "${binary}" ]; then
-            echo "Godot linux.arm64 binary not found in ${archive}" >&2
+            echo "Godot linux.${godot_arch} binary not found in ${archive}" >&2
             exit 1
           fi
 
