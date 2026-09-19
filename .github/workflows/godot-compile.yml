@@ -19,7 +19,7 @@ concurrency:
 jobs:
   compile:
     name: Godot Compile
-    runs-on: seorilabs-rpi-arm64
+    runs-on: seorilabs-x64
     timeout-minutes: 25
 
     steps:

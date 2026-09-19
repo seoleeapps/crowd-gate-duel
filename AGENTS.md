@@ -42,7 +42,7 @@ Godot 헤드리스는 **스크립트 오류가 있어도 종료 코드 0 을 낼
 
 ## CI
 
-- 워크플로 `Godot Compile`, job 이름도 `Godot Compile`, `runs-on: seorilabs-rpi-arm64`
+- 워크플로 `Godot Compile`, job 이름도 `Godot Compile`, `runs-on: seorilabs-x64`
 - 버전은 `build.env` 가 유일한 선언이다. 엔진을 올릴 때 이 파일만 바꾼다
 - 러너·액션 버전 작업은 `seorilabs-arc-runners` 스킬과
   `/Users/syous/Workspace/kubectl/github-actions-runners/global-versions.yaml` 을 따른다
