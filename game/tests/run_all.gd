@@ -6,12 +6,15 @@ extends SceneTree
 
 func _initialize() -> void:
 	var suites: Array[TestBase] = []
-	print("[run_all] 갈림길 군중 대전 도메인 테스트 시작")
+	print("[run_all] 갈림길 군중 대전 도메인·응용 테스트 시작")
 	suites.append(TestPcg32.run())
 	suites.append(TestGateRules.run())
 	suites.append(TestDeterminism.run())
 	suites.append(TestGenerator.run())
 	suites.append(TestStrategyMatrix.run())
+	suites.append(TestDuelSession.run())
+	suites.append(TestRecords.run())
+	suites.append(TestProgressStore.run())
 
 	var total_passed: int = 0
 	var total_failed: int = 0
