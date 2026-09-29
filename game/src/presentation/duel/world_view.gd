@@ -48,6 +48,8 @@ func _ready() -> void:
 	add_child(_decor)
 	opp_view = CrowdView.new()
 	opp_view.mine = false
+	opp_view.body_color = Palette.OPP
+	opp_view.flag_pattern = "dot"
 	add_child(opp_view)
 	me_view = CrowdView.new()
 	add_child(me_view)
@@ -69,6 +71,13 @@ func show_only_mine(count: int) -> void:
 	opp_chip.visible = false
 	me_view.idle_sway = true
 	set_standing(count, count, 0.0, false)
+
+
+## 꾸미기: 내 무리의 팔레트와 깃발 무늬.
+func set_my_style(color: Color, pattern: String) -> void:
+	me_view.body_color = color
+	me_view.flag_pattern = pattern
+	me_view.set_count(me_view.count)
 
 
 func set_opponent_badge(badge: CrowdView.Badge) -> void:
@@ -159,7 +168,7 @@ func sink(mine: bool, amount: int) -> void:
 	particles.initial_velocity_min = 20.0 * Palette.DP
 	particles.initial_velocity_max = 60.0 * Palette.DP
 	particles.gravity = Vector2(0, 60 * Palette.DP)
-	particles.color = Palette.side_color(mine).lerp(Palette.BG, 0.4)
+	particles.color = _body(mine).lerp(Palette.BG, 0.4)
 	_fire(particles)
 
 
@@ -176,7 +185,7 @@ func transfer(to_mine: bool, amount: int) -> Tween:
 			func(t: float) -> void: doll.position = from.lerp(to, t) + lift * sin(PI * t),
 			0.0, 1.0, 0.6
 		).set_delay(0.04 * float(i))
-		tween.tween_property(doll, "modulate", Palette.side_color(to_mine), 0.6).set_delay(0.04 * float(i))
+		tween.tween_property(doll, "modulate", _body(to_mine), 0.6).set_delay(0.04 * float(i))
 	tween.chain().tween_callback(_clear_fx_sprites)
 	return tween
 
@@ -395,7 +404,7 @@ func _doll_particles(mine: bool, amount: int) -> CPUParticles2D:
 	particles.lifetime = 0.9
 	particles.scale_amount_min = 0.22
 	particles.scale_amount_max = 0.32
-	particles.color = Palette.side_color(mine)
+	particles.color = _body(mine)
 	return particles
 
 
@@ -409,7 +418,7 @@ func _flying_doll(mine: bool) -> Sprite2D:
 	var doll: Sprite2D = Sprite2D.new()
 	doll.texture = CrowdView.DOLL_TEXTURE
 	doll.scale = Vector2.ONE * 0.3
-	doll.modulate = Palette.side_color(mine)
+	doll.modulate = _body(mine)
 	_fx.add_child(doll)
 	return doll
 
@@ -418,3 +427,7 @@ func _clear_fx_sprites() -> void:
 	for child: Node in _fx.get_children():
 		if child is Sprite2D:
 			child.queue_free()
+
+
+func _body(mine: bool) -> Color:
+	return me_view.body_color if mine else opp_view.body_color

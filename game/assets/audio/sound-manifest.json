@@ -1,0 +1,14 @@
+{
+  "model": "stable-audio-2.5",
+  "out_dir": ".",
+  "tracks": [
+    {"name": "bgm_home", "type": "loop", "duration": 60, "crossfade": 3,
+     "prompt": "light cheerful village festival music, warm acoustic guitar, soft accordion, gentle hand claps and tambourine, relaxed and friendly, steady mid tempo"},
+    {"name": "bgm_duel", "type": "loop", "duration": 90, "crossfade": 3,
+     "prompt": "playful parade march for a light competitive casual game, marimba and pizzicato strings, brushed snare, bouncy bass, steady driving tempo, gentle tension, not epic"},
+    {"name": "sting_win", "type": "oneshot", "duration": 4,
+     "prompt": "short cheerful festival fanfare, bright brass and glockenspiel, single celebratory phrase, no background music, no background noise"},
+    {"name": "sting_lose", "type": "oneshot", "duration": 3,
+     "prompt": "short gentle descending phrase, soft marimba and low pizzicato, playful not sad, single phrase, no background music, no background noise"}
+  ]
+}

@@ -8,6 +8,7 @@ signal picked(index: int)
 const HAND_ICON: Texture2D = preload("res://assets/art/hand.svg")
 
 var cells: Array[GateCell] = []
+var assist: bool = false
 var _row: HBoxContainer
 var _hand: TextureRect
 var _hand_tween: Tween
@@ -36,6 +37,7 @@ func present(gates: Array[Gate], guided: int = -1) -> Tween:
 	cells.clear()
 	for i: int in range(gates.size()):
 		var cell: GateCell = GateCell.new(gates[i])
+		cell.assist = assist
 		cell.pressed.connect(func() -> void: picked.emit(i))
 		if guided >= 0 and guided != i:
 			cell.disabled = true

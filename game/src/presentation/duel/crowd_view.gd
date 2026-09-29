@@ -19,6 +19,10 @@ const GAP_ACROSS_DP: float = 10.5
 
 var mine: bool = true
 var badge: Badge = Badge.NONE
+## 무리 색. 내 무리는 꾸미기 팔레트(따뜻한 계열)를 따를 수 있다.
+var body_color: Color = Palette.MINE
+## 깃발 무늬. 꾸미기로 바꿀 수 있다. 봇은 늘 무채색 막대다.
+var flag_pattern: String = "chevron"
 var count: int = 12
 var road_dir: Vector2 = Vector2(1, -1).normalized()
 ## 홈 대기 장면처럼 제자리에서 흔들린다.
@@ -70,7 +74,7 @@ func top_offset() -> float:
 
 
 func flag_color() -> Color:
-	return Palette.BOT if badge == Badge.BOT else Palette.side_color(mine)
+	return Palette.BOT if badge == Badge.BOT else body_color
 
 
 func _rebuild() -> void:
@@ -114,7 +118,7 @@ func _rebuild() -> void:
 
 
 func _write_instances() -> void:
-	var color: Color = Palette.side_color(mine)
+	var color: Color = body_color
 	for i: int in range(_points.size()):
 		var sway: float = 0.0
 		if idle_sway:
@@ -162,7 +166,7 @@ func _draw_mass() -> void:
 	for i: int in range(24):
 		var a: float = TAU * float(i) / 24.0
 		points.append(center + road_dir * cos(a) * half_len + across * sin(a) * half_wid - Vector2(0, 8 * Palette.DP))
-	draw_colored_polygon(points, Palette.side_color(mine).darkened(0.25))
+	draw_colored_polygon(points, body_color.darkened(0.25))
 	points.append(points[0])
 	draw_polyline(points, Palette.DOLL_LINE, 1.0 * Palette.DP, true)
 
@@ -178,25 +182,7 @@ func _draw_flags() -> void:
 		_draw_flag(p + Vector2(5.0 * _scale, -16.0 * _scale) * Palette.DP)
 
 
-## 막대 끝에서 위로 올린 깃발. 무늬는 기하 도형이다. 나는 꺾쇠, 상대는 원, 봇은 무채색 막대 둘.
 func _draw_flag(base: Vector2) -> void:
-	var dp: float = Palette.DP
-	var top: Vector2 = base - Vector2(0, 30 * dp)
-	var w: float = 20 * dp
-	var fh: float = 13 * dp
-	_flag_layer.draw_line(base, top, Palette.POLE, 1.6 * dp, true)
-	var cloth: PackedVector2Array = PackedVector2Array([
-		top, top + Vector2(w, 0), top + Vector2(w - 3.5 * dp, fh / 2.0), top + Vector2(w, fh), top + Vector2(0, fh),
-	])
-	_flag_layer.draw_colored_polygon(cloth, flag_color())
+	var pattern: String = "bars" if badge == Badge.BOT else flag_pattern
 	var mark: Color = Palette.BOT_MARK if badge == Badge.BOT else Palette.FLAG_MARK
-	if badge == Badge.BOT:
-		for x: float in [6.0, 12.0]:
-			_flag_layer.draw_line(top + Vector2(x * dp, 2 * dp), top + Vector2(x * dp, fh - 2 * dp), mark, 2.2 * dp)
-	elif mine:
-		var chevron: PackedVector2Array = PackedVector2Array([
-			top + Vector2(3 * dp, 2.5 * dp), top + Vector2(10 * dp, fh / 2.0), top + Vector2(3 * dp, fh - 2.5 * dp),
-		])
-		_flag_layer.draw_polyline(chevron, mark, 2.4 * dp, true)
-	else:
-		_flag_layer.draw_circle(top + Vector2(w / 2.0, fh / 2.0), 3.4 * dp, mark, true, -1.0, true)
+	FlagArt.draw(_flag_layer, base, Palette.DP, pattern, flag_color(), mark)

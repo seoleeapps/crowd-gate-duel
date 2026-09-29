@@ -116,9 +116,9 @@ func decisive_segment() -> int:
 
 
 ## 이 판을 남의 상대가 될 기록으로 만든다. 선택 시퀀스만 담는다(DEC-009).
-func to_record(display_name: String, created_at: int) -> ReplayRecord:
+func to_record(display_name: String, created_at: int, commit_extended: bool = false) -> ReplayRecord:
 	assert(is_finished())
-	return ReplayRecord.make(display_name, course.band, course.seed_text, picks_me, created_at)
+	return ReplayRecord.make(display_name, course.band, course.seed_text, picks_me, created_at, commit_extended)
 
 
 ## 진행 중 판 저장용 스냅샷. 결과 수치 대신 내 선택만 담고 복원 때 판정을 다시 돌린다.

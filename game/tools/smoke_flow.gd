@@ -72,7 +72,27 @@ func _run() -> void:
 		_check(names.has(expected), "분석 이벤트 %s" % expected)
 
 	result.home_pressed.emit()
-	_check(await _wait_for(HomeScreen) != null, "결과 → 홈 복귀")
+	var back_home: HomeScreen = await _wait_for(HomeScreen)
+	_check(back_home != null, "결과 → 홈 복귀")
+
+	back_home.profile_pressed.emit()
+	var profile: ProfileScreen = await _wait_for(ProfileScreen)
+	_check(profile != null, "홈 → 꾸미기")
+	_check(app.progress.is_unlocked(Cosmetics.ONBOARDING_REWARD), "온보딩 보상 깃발 해금")
+	profile.back_pressed.emit()
+	var home_again: HomeScreen = await _wait_for(HomeScreen)
+	home_again.settings_pressed.emit()
+	var settings: SettingsScreen = await _wait_for(SettingsScreen)
+	_check(settings != null, "홈 → 설정")
+	app.progress.set_setting("sound", false)
+	settings.settings_changed.emit("sound")
+	_check(not app.feedback.sound_on, "설정 변경이 소리에 반영")
+	settings.back_pressed.emit()
+	_check(await _wait_for(HomeScreen) != null, "설정 → 홈")
+
+	# 재생 객체는 오디오 스레드가 한 번 돈 뒤에 풀린다. 끄고 잠시 기다려야 종료 시 누수로 잡히지 않는다.
+	app.feedback.stop_all()
+	await create_timer(0.3, true, false, true).timeout
 
 	if _failures.is_empty():
 		print("[smoke] ALL GREEN")
