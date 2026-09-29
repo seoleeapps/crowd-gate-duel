@@ -8,20 +8,21 @@ const VERTICAL: Vector2i = Vector2i(1080, 1920)
 
 
 ## 카드를 한 번 그려 이미지로 돌려준다. 호출자는 트리에 붙인 뒤 await 한다.
-static func render(parent: Node, card_size: Vector2i, scene: Image, me: int, opp: int, result_color: Color) -> Image:
+## border 는 꾸미기 카드 테두리 값("", ink, stripes, bunting)이다.
+static func render(parent: Node, card_size: Vector2i, scene: Image, me: int, opp: int, result_color: Color, border: String = "") -> Image:
 	var card: ShareCard = ShareCard.new()
 	card.size = card_size
 	card.render_target_update_mode = SubViewport.UPDATE_ONCE
 	card.transparent_bg = false
 	parent.add_child(card)
-	card._build(scene, me, opp, result_color)
+	card._build(scene, me, opp, result_color, border)
 	await RenderingServer.frame_post_draw
 	var image: Image = card.get_texture().get_image()
 	card.queue_free()
 	return image
 
 
-func _build(scene: Image, me: int, opp: int, result_color: Color) -> void:
+func _build(scene: Image, me: int, opp: int, result_color: Color, border: String) -> void:
 	var dp: float = Palette.DP
 	var root: Control = Control.new()
 	root.size = Vector2(size)
@@ -62,3 +63,8 @@ func _build(scene: Image, me: int, opp: int, result_color: Color) -> void:
 	name_label.add_theme_color_override("font_color", Palette.INK)
 	name_label.position = Vector2(20 * dp, strip.position.y + 90 * dp)
 	root.add_child(name_label)
+	if not border.is_empty():
+		var frame: Control = Control.new()
+		frame.size = root.size
+		frame.draw.connect(func() -> void: BorderArt.draw(frame, Rect2(Vector2.ZERO, frame.size), border, 3.0 * dp))
+		root.add_child(frame)

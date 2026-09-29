@@ -16,6 +16,8 @@ const HALF_ICON: Texture2D = preload("res://assets/art/half.svg")
 const YIELD_ICON: Texture2D = preload("res://assets/art/yield.svg")
 
 var gate: Gate
+## 색각 보조 표시 강화(SCR-006). 켜면 종류마다 다른 바탕 무늬를 더한다.
+var assist: bool = false
 var _icon: TextureRect
 var _value: Label
 var _markers: HBoxContainer
@@ -147,6 +149,8 @@ func _marker(mark: Dictionary) -> PanelContainer:
 
 func _draw() -> void:
 	var dp: float = Palette.DP
+	if assist:
+		_draw_pattern()
 	if has_focus() and not disabled:
 		draw_rect(Rect2(Vector2(4, 4) * dp, size - Vector2(8, 8) * dp), Palette.INK, false, 3 * dp)
 	if button_pressed or is_pressed():
@@ -157,3 +161,39 @@ func _draw() -> void:
 		var corner: Vector2 = Vector2(size.x - lock_size.x - 12 * dp, size.y - lock_size.y - 12 * dp)
 		draw_circle(corner + lock_size / 2.0, 16 * dp, Palette.CHIP_MINE, true, -1.0, true)
 		draw_texture_rect(LOCK_ICON, Rect2(corner, lock_size), false)
+
+
+## 종류별 바탕 무늬. 아이콘 모양에 더해 두 번째 구분 단서가 된다.
+##   불리기: 사선 / 모으기: 점 격자 / 빼앗기: 가로줄 / 방패: 격자
+func _draw_pattern() -> void:
+	var dp: float = Palette.DP
+	var ink: Color = Color(Palette.INK, 0.1)
+	var step: float = 14 * dp
+	match gate.kind:
+		Gate.Kind.MULTIPLY:
+			var x: float = -size.y
+			while x < size.x:
+				draw_line(Vector2(x, size.y), Vector2(x + size.y, 0), ink, 2 * dp)
+				x += step
+		Gate.Kind.ADD:
+			var y: float = step / 2.0
+			while y < size.y:
+				var x: float = step / 2.0
+				while x < size.x:
+					draw_circle(Vector2(x, y), 2 * dp, ink)
+					x += step
+				y += step
+		Gate.Kind.STEAL:
+			var y: float = step / 2.0
+			while y < size.y:
+				draw_line(Vector2(0, y), Vector2(size.x, y), ink, 2 * dp)
+				y += step
+		Gate.Kind.SHIELD:
+			var x: float = step / 2.0
+			while x < size.x:
+				draw_line(Vector2(x, 0), Vector2(x, size.y), ink, 2 * dp)
+				x += step
+			var y: float = step / 2.0
+			while y < size.y:
+				draw_line(Vector2(0, y), Vector2(size.x, y), ink, 2 * dp)
+				y += step

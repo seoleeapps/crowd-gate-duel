@@ -10,6 +10,7 @@ extends RefCounted
 
 signal fetch_finished(data: Dictionary)
 signal upload_finished(ok: bool)
+signal clear_finished(ok: bool)
 
 var read_count: int = 0
 var write_count: int = 0
@@ -19,10 +20,10 @@ func is_online() -> bool:
 	return false
 
 
-## 대역 조건에 맞는 남의 기록 1건을 요청한다. 목록을 받아 고르지 않는다.
-func request_fetch(band: int) -> void:
+## 대역·확약 연장 조건에 맞는 남의 기록 1건을 요청한다. 목록을 받아 고르지 않는다.
+func request_fetch(band: int, commit_extended: bool) -> void:
 	read_count += 1
-	_fetch(band)
+	_fetch(band, commit_extended)
 
 
 ## 내 기록 문서를 덮어쓴다.
@@ -31,8 +32,18 @@ func request_upload(data: Dictionary) -> void:
 	_upload(data)
 
 
-func _fetch(_band: int) -> void:
+## 진행 초기화 때 내 기록 문서를 비운다(02 저장과 리셋 계약).
+func request_clear() -> void:
+	write_count += 1
+	_clear()
+
+
+func _fetch(_band: int, _commit_extended: bool) -> void:
 	fetch_finished.emit({})
+
+
+func _clear() -> void:
+	clear_finished.emit(false)
 
 
 func _upload(_data: Dictionary) -> void:

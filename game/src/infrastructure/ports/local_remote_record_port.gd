@@ -26,17 +26,23 @@ func deliver() -> void:
 	_held_fetch.clear()
 
 
-func _fetch(band: int) -> void:
+func _fetch(band: int, commit_extended: bool) -> void:
 	var found: Dictionary = {}
 	if online:
 		for data: Dictionary in pool:
-			if int(data.get("band", 0)) == band:
+			if int(data.get("band", 0)) == band and bool(data.get("commitExtended", false)) == commit_extended:
 				found = data
 				break
 	if respond_immediately:
 		fetch_finished.emit(found)
 	else:
 		_held_fetch.append(found)
+
+
+func _clear() -> void:
+	if online:
+		my_document = {}
+	clear_finished.emit(online)
 
 
 func _upload(data: Dictionary) -> void:

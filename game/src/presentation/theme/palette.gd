@@ -39,9 +39,5 @@ const TIMER_TRACK: Color = Color("#e6dfd2")
 const DIM: Color = Color(0.17, 0.15, 0.13, 0.45)
 
 
-static func side_color(mine: bool) -> Color:
-	return MINE if mine else OPP
-
-
 static func chip_color(mine: bool) -> Color:
 	return CHIP_MINE if mine else CHIP_OPP

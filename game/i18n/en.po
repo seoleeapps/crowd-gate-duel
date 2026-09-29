@@ -113,3 +113,159 @@ msgstr "Shield, counter %d percent"
 
 msgid "A11Y_START"
 msgstr "Start a duel"
+
+msgid "HOME_PROFILE"
+msgstr "Customize"
+
+msgid "HOME_SETTINGS"
+msgstr "Settings"
+
+msgid "BACK"
+msgstr "Back"
+
+msgid "PROFILE_TITLE"
+msgstr "Customize"
+
+msgid "COSMETIC_NOTE"
+msgstr "Looks only. Nothing here changes who wins."
+
+msgid "STATS"
+msgstr "%d wins · %d losses · %d draws"
+
+msgid "SLOT_FLAG"
+msgstr "Flag"
+
+msgid "SLOT_PALETTE"
+msgstr "Crowd color"
+
+msgid "SLOT_BORDER"
+msgstr "Card border"
+
+msgid "EQUIPPED"
+msgstr "On"
+
+msgid "EQUIP"
+msgstr "Use"
+
+msgid "UNLOCK_CONFIRM"
+msgstr "Unlock for %d feathers?"
+
+msgid "UNLOCK"
+msgstr "Unlock"
+
+msgid "CANCEL"
+msgstr "Cancel"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "NOT_ENOUGH"
+msgstr "You need %d more feathers"
+
+msgid "ITEM_UNLOCKED"
+msgstr "Unlocked"
+
+msgid "NEW_ITEM"
+msgstr "New look unlocked"
+
+msgid "SETTINGS_TITLE"
+msgstr "Settings"
+
+msgid "SET_COMMIT_EXT"
+msgstr "Longer pick time (×1.5)"
+
+msgid "SET_COMMIT_EXT_DESC"
+msgstr "You will be matched with records made with the same setting."
+
+msgid "SET_VIBRATION"
+msgstr "Vibration"
+
+msgid "SET_SOUND"
+msgstr "Sound effects"
+
+msgid "SET_MUSIC"
+msgstr "Music"
+
+msgid "SET_COLORBLIND"
+msgstr "Gate patterns for color vision"
+
+msgid "SET_REDUCE_SHAKE"
+msgstr "Reduce screen shake"
+
+msgid "SET_LANGUAGE"
+msgstr "Language"
+
+msgid "LANG_SYSTEM"
+msgstr "Device"
+
+msgid "LANG_EN"
+msgstr "English"
+
+msgid "LANG_KO"
+msgstr "한국어"
+
+msgid "SET_RESET"
+msgstr "Reset progress"
+
+msgid "RESET_CONFIRM"
+msgstr "Reset everything? Wins, feathers and looks are erased and you start again from the first practice match."
+
+msgid "RESET_YES"
+msgstr "Reset"
+
+msgid "SET_PRIVACY"
+msgstr "Privacy"
+
+msgid "PRIVACY_TEXT"
+msgstr "We do not collect your name, contact details or location. Your latest match is kept as one record of the gates you picked, so other players can face it. Resetting progress deletes that record too."
+
+msgid "ITEM_FLAG_CHEVRON"
+msgstr "Chevron flag"
+
+msgid "ITEM_FLAG_DIAMOND"
+msgstr "Diamond flag"
+
+msgid "ITEM_FLAG_CROSS"
+msgstr "Cross flag"
+
+msgid "ITEM_FLAG_STRIPES"
+msgstr "Striped flag"
+
+msgid "ITEM_FLAG_TRIANGLE"
+msgstr "Triangle flag"
+
+msgid "ITEM_FLAG_RING"
+msgstr "Ring flag"
+
+msgid "ITEM_FLAG_ZIGZAG"
+msgstr "Zigzag flag"
+
+msgid "ITEM_FLAG_STAR"
+msgstr "Star flag"
+
+msgid "ITEM_PALETTE_SUNRISE"
+msgstr "Sunrise"
+
+msgid "ITEM_PALETTE_AMBER"
+msgstr "Amber"
+
+msgid "ITEM_PALETTE_CORAL"
+msgstr "Coral"
+
+msgid "ITEM_PALETTE_TERRACOTTA"
+msgstr "Terracotta"
+
+msgid "ITEM_PALETTE_ROSE"
+msgstr "Rose"
+
+msgid "ITEM_BORDER_NONE"
+msgstr "No border"
+
+msgid "ITEM_BORDER_INK"
+msgstr "Ink frame"
+
+msgid "ITEM_BORDER_STRIPES"
+msgstr "Festival stripes"
+
+msgid "ITEM_BORDER_BUNTING"
+msgstr "Bunting"

@@ -14,6 +14,8 @@ static func run() -> TestBase:
 	_test_remote_budget_per_duel(t)
 	_test_offline_bot_and_reconnect_upload(t)
 	_test_slow_fetch_goes_bot_then_reuses(t)
+	_test_commit_extended_matching(t)
+	_test_offline_reset_clears_later(t)
 	AtomicFileStore.remove(STORE_PATH)
 	return t
 
@@ -38,7 +40,7 @@ static func _test_record_has_no_result(t: TestBase) -> void:
 	keys.sort()
 	t.check_eq(
 		keys,
-		["band", "courseSeed", "createdAt", "displayName", "picks", "schemaVersion"],
+		["band", "commitExtended", "courseSeed", "createdAt", "displayName", "picks", "schemaVersion"],
 		"기록 필드는 06 데이터 계약 그대로이고 결과 수치가 없다"
 	)
 
@@ -186,3 +188,50 @@ static func _test_slow_fetch_goes_bot_then_reuses(t: TestBase) -> void:
 	var promoted: Dictionary = resolver.take_setup(4, "slow-promoted")
 	t.check((promoted["opponent"] as Opponent).is_bot(), "대역이 달라진 기록은 쓰지 않는다")
 	t.check_eq((promoted["course"] as Course).band, 4, "지금 대역의 코스로 시작")
+
+
+static func _test_commit_extended_matching(t: TestBase) -> void:
+	# DEC-008: 확약 시간 연장을 켠 사람은 연장을 켠 사람의 기록과 맞붙는다.
+	var port: LocalRemoteRecordPort = LocalRemoteRecordPort.new()
+	var normal: DuelSession = _recorded_duel("ext-normal", 2, "a")
+	var extended: DuelSession = _recorded_duel("ext-long", 2, "b")
+	port.pool.append(normal.to_record("normal", 0, false).to_dict())
+	port.pool.append(extended.to_record("extended", 0, true).to_dict())
+	var resolver: OpponentResolver = OpponentResolver.new(port)
+	resolver.prefetch(2, true)
+	var setup: Dictionary = resolver.take_setup(2, "ext-fallback", true)
+	t.check_eq((setup["opponent"] as Opponent).display_name(), "extended", "연장을 켜면 연장 기록 상대")
+	resolver.prefetch(2, false)
+	var setup_off: Dictionary = resolver.take_setup(2, "ext-fallback-2", true)
+	t.check((setup_off["opponent"] as Opponent).is_bot(), "받은 뒤 설정이 달라지면 그 기록을 쓰지 않는다")
+	var legacy: Dictionary = normal.to_record("legacy", 0).to_dict()
+	legacy.erase("commitExtended")
+	var parsed: ReplayRecord = ReplayRecord.from_dict(legacy)
+	t.check(parsed != null and not parsed.commit_extended, "필드가 없는 기록은 연장 꺼짐으로 읽는다")
+	port.my_document = {"picks": [0]}
+	port.request_clear()
+	t.check(port.my_document.is_empty(), "진행 초기화는 내 원격 문서를 비운다")
+
+
+static func _test_offline_reset_clears_later(t: TestBase) -> void:
+	# 02 리셋 계약: 오프라인에서 초기화해도 원격 문서는 연결될 때 지워진다. 앱을 다시 켜도 잊지 않는다.
+	AtomicFileStore.remove(STORE_PATH)
+	var port: LocalRemoteRecordPort = LocalRemoteRecordPort.new()
+	port.my_document = {"picks": [1, 2, 0]}
+	port.online = false
+	var store: ProgressStore = ProgressStore.new(STORE_PATH)
+	var sync: RecordSync = RecordSync.new(port, store)
+	store.set_pending_upload({"picks": [0]})
+	store.reset_progress()
+	sync.clear_remote()
+	t.check(not port.my_document.is_empty(), "오프라인이면 아직 지우지 못한다")
+	t.check(store.pending_upload().is_empty(), "초기화하면 올릴 기록도 버린다")
+
+	var reopened: ProgressStore = ProgressStore.new(STORE_PATH)
+	reopened.read()
+	t.check(reopened.pending_clear(), "지우기 대기가 디스크에 남는다")
+	var sync_after: RecordSync = RecordSync.new(port, reopened)
+	port.online = true
+	sync_after.flush()
+	t.check(port.my_document.is_empty(), "연결되면 원격 문서를 지운다")
+	t.check(not reopened.pending_clear(), "지운 뒤 대기 표시를 내린다")

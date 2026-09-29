@@ -16,10 +16,13 @@ var band: int = 1
 var course_seed: String = ""
 var picks: Array[int] = []
 var created_at: int = 0  ## 유닉스 초
+## 확약 시간 연장(접근성, DEC-008)을 켜고 둔 기록인지. 대역 매칭에 반영한다. 판정에는 영향이 없다.
+var commit_extended: bool = false
 
 
 static func make(
-	display_name_in: String, band_in: int, course_seed_in: String, picks_in: Array[int], created_at_in: int
+	display_name_in: String, band_in: int, course_seed_in: String, picks_in: Array[int], created_at_in: int,
+	commit_extended_in: bool = false
 ) -> ReplayRecord:
 	var record: ReplayRecord = ReplayRecord.new()
 	record.display_name = display_name_in.left(MAX_DISPLAY_NAME)
@@ -27,6 +30,7 @@ static func make(
 	record.course_seed = course_seed_in
 	record.picks = picks_in.duplicate()
 	record.created_at = created_at_in
+	record.commit_extended = commit_extended_in
 	return record
 
 
@@ -38,6 +42,7 @@ func to_dict() -> Dictionary:
 		"courseSeed": course_seed,
 		"picks": picks.duplicate(),
 		"createdAt": created_at,
+		"commitExtended": commit_extended,
 	}
 
 
@@ -72,7 +77,8 @@ static func from_dict(data: Dictionary) -> ReplayRecord:
 		band_value,
 		str(seed_value),
 		typed_picks,
-		int(data.get("createdAt", 0))
+		int(data.get("createdAt", 0)),
+		bool(data.get("commitExtended", false))
 	)
 
 

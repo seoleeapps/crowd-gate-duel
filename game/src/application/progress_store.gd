@@ -43,8 +43,29 @@ static func defaults() -> Dictionary:
 		"onboarding_done": false,
 		"ad_retry_date": "",
 		"ad_retry_count": 0,
+		"unlocked": [],
+		"equipped": {
+			"flag": Cosmetics.DEFAULTS[Cosmetics.Slot.FLAG],
+			"palette": Cosmetics.DEFAULTS[Cosmetics.Slot.PALETTE],
+			"border": Cosmetics.DEFAULTS[Cosmetics.Slot.BORDER],
+		},
+		"settings": default_settings(),
 		"in_progress": {},
 		"pending_upload": {},
+		"pending_clear": false,
+	}
+
+
+## 03 SCR-006 항목. locale 이 빈 문자열이면 기기 언어를 따른다.
+static func default_settings() -> Dictionary:
+	return {
+		"commit_extended": false,
+		"vibration": true,
+		"sound": true,
+		"music": true,
+		"colorblind_assist": false,
+		"reduce_shake": false,
+		"locale": "",
 	}
 
 
@@ -60,6 +81,9 @@ func read() -> void:
 	# 없는 키는 기본값으로 채운다. 버전이 오르며 새 항목이 생겨도 기존 진행을 잃지 않는다.
 	for key: String in raw:
 		data[key] = raw[key]
+	var settings: Dictionary = default_settings()
+	settings.merge(raw.get("settings", {}), true)
+	data["settings"] = settings
 	data["schema_version"] = SCHEMA_VERSION
 
 
@@ -102,11 +126,18 @@ func apply_result(result: int, today: String) -> Dictionary:
 			data["draws"] = int(data["draws"]) + 1
 	data["feathers"] = feathers() + gained
 	data["band"] = maxi(band_before, band_for_wins(wins()))
+	var rewards: Array[String] = []
+	for reward_band: int in Cosmetics.BAND_REWARDS:
+		if band_before < reward_band and band() >= reward_band:
+			var id: String = Cosmetics.BAND_REWARDS[reward_band]
+			if grant(id):
+				rewards.append(id)
 	return {
 		"feathers": gained,
 		"daily_first_win": daily_first_win,
 		"band_before": band_before,
 		"band_after": band(),
+		"items": rewards,
 	}
 
 
@@ -120,6 +151,7 @@ func complete_onboarding() -> int:
 		return 0
 	data["onboarding_done"] = true
 	data["feathers"] = feathers() + FEATHERS_ONBOARDING
+	grant(Cosmetics.ONBOARDING_REWARD)
 	return FEATHERS_ONBOARDING
 
 
@@ -134,6 +166,62 @@ func use_ad_retry(today: String) -> void:
 		data["ad_retry_date"] = today
 		data["ad_retry_count"] = 0
 	data["ad_retry_count"] = int(data["ad_retry_count"]) + 1
+
+
+func is_unlocked(id: String) -> bool:
+	return Cosmetics.is_default(id) or (data["unlocked"] as Array).has(id)
+
+
+## 보상으로 무료 해금. 이미 있으면 false.
+func grant(id: String) -> bool:
+	if is_unlocked(id):
+		return false
+	(data["unlocked"] as Array).append(id)
+	return true
+
+
+## 깃털로 해금. 깃털이 모자라거나 이미 있으면 false 이고 아무것도 바뀌지 않는다.
+func purchase(id: String) -> bool:
+	if is_unlocked(id) or feathers() < Cosmetics.price_of(id):
+		return false
+	data["feathers"] = feathers() - Cosmetics.price_of(id)
+	(data["unlocked"] as Array).append(id)
+	return true
+
+
+func equip(id: String) -> bool:
+	if not is_unlocked(id):
+		return false
+	data["equipped"][_slot_key(Cosmetics.slot_of(id))] = id
+	return true
+
+
+func equipped(slot: Cosmetics.Slot) -> String:
+	return str(data["equipped"][_slot_key(slot)])
+
+
+func setting(key: String) -> Variant:
+	return data["settings"][key]
+
+
+func set_setting(key: String, value: Variant) -> void:
+	data["settings"][key] = value
+
+
+## 진행 초기화(SCR-006). 설정은 남기고 진행·해금·보관 기록을 모두 지운다.
+func reset_progress() -> void:
+	var settings: Dictionary = data["settings"]
+	data = defaults()
+	data["settings"] = settings
+
+
+static func _slot_key(slot: Cosmetics.Slot) -> String:
+	match slot:
+		Cosmetics.Slot.FLAG:
+			return "flag"
+		Cosmetics.Slot.PALETTE:
+			return "palette"
+	return "border"
 
 
 static func band_for_wins(win_count: int) -> int:
@@ -159,3 +247,12 @@ func set_pending_upload(record: Dictionary) -> void:
 
 func pending_upload() -> Dictionary:
 	return data["pending_upload"]
+
+
+## 원격 기록 문서를 지워야 하는데 아직 못 지웠으면 true. 연결될 때까지 남는다.
+func set_pending_clear(value: bool) -> void:
+	data["pending_clear"] = value
+
+
+func pending_clear() -> bool:
+	return bool(data["pending_clear"])

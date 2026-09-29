@@ -13,6 +13,7 @@ var _out: String = ""
 var _size: Vector2i = Vector2i(1080, 2340)
 var _viewport: SubViewport
 var _only: PackedStringArray = []
+var _locale: String = "ko"
 
 
 func _initialize() -> void:
@@ -39,11 +40,13 @@ func _initialize() -> void:
 		quit(1)
 	)
 	DirAccess.make_dir_recursive_absolute(_out)
-	TranslationServer.set_locale(locale)
+	_locale = locale
 	_run.call_deferred()
 
 
 func _run() -> void:
+	# 자동 로드된 App 이 시작하며 기기 언어를 적용하므로, 그 뒤에 캡처 언어로 바꾼다.
+	TranslationServer.set_locale(_locale)
 	_viewport = SubViewport.new()
 	_viewport.size = _size
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -63,6 +66,12 @@ func _run() -> void:
 		await _capture_result()
 	if _wants("home"):
 		await _capture_home()
+	if _wants("duel-styled"):
+		await _capture_styled_duel()
+	if _wants("profile"):
+		await _capture_profile()
+	if _wants("settings"):
+		await _capture_settings()
 	print("[capture] ALL DONE")
 	quit(0)
 
@@ -154,6 +163,50 @@ func _capture_home() -> void:
 	await _show(home)
 	await create_timer(0.3).timeout
 	await _save("home")
+
+
+## 꾸미기(별 깃발·산호색)와 색각 보조 무늬를 켠 대국.
+func _capture_styled_duel() -> void:
+	var screen: DuelScreen = DuelScreen.new()
+	screen.setup(_fixture_session(false))
+	screen.my_color = Color(Cosmetics.value_of("palette_coral"))
+	screen.my_flag = Cosmetics.value_of("flag_star")
+	screen.colorblind_assist = true
+	await _show(screen)
+	await create_timer(1.2 + 0.35 + 0.9).timeout
+	await _save("duel-styled")
+
+
+## 꾸미기·설정 화면은 디스크에 쓰지 않는 메모리 저장소로 그린다.
+func _fixture_store() -> ProgressStore:
+	var store: ProgressStore = ProgressStore.new("user://capture/unused.json")
+	store.data["feathers"] = 245
+	store.data["wins"] = 12
+	store.data["losses"] = 7
+	store.data["draws"] = 1
+	store.grant("flag_diamond")
+	store.grant("palette_amber")
+	store.equip("flag_diamond")
+	store.equip("palette_amber")
+	return store
+
+
+func _capture_profile() -> void:
+	var screen: ProfileScreen = ProfileScreen.new()
+	screen.setup(_fixture_store())
+	await _show(screen)
+	await create_timer(0.3).timeout
+	await _save("profile")
+
+
+func _capture_settings() -> void:
+	var store: ProgressStore = _fixture_store()
+	store.set_setting("commit_extended", true)
+	var screen: SettingsScreen = SettingsScreen.new()
+	screen.setup(store)
+	await _show(screen)
+	await create_timer(0.3).timeout
+	await _save("settings")
 
 
 func _show(screen: Control) -> void:

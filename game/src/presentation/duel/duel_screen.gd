@@ -20,6 +20,12 @@ const HOLD_SECONDS: float = 0.45
 
 var session: DuelSession
 var tutorial: bool = false
+## 아래는 화면을 붙이기 전에 화면 전환 루트가 채운다. 비워 두면 소리 없이 기본 모습으로 동작한다.
+var feedback: Feedback = null
+var reduce_shake: bool = false
+var colorblind_assist: bool = false
+var my_color: Color = Palette.MINE
+var my_flag: String = "chevron"
 
 var world: WorldView
 var band: GateBand
@@ -44,6 +50,7 @@ func _ready() -> void:
 	ribbon.pause_pressed.connect(_open_pause)
 	add_child(ribbon)
 	band = GateBand.new()
+	band.assist = colorblind_assist
 	band.picked.connect(_on_picked)
 	add_child(band)
 	timer = CommitTimer.new()
@@ -58,6 +65,7 @@ func _ready() -> void:
 	resized.connect(_layout)
 	_layout()
 	world.set_opponent_badge(_badge())
+	world.set_my_style(my_color, my_flag)
 	_run.call_deferred()
 
 
@@ -74,7 +82,12 @@ func _process(delta: float) -> void:
 	_ms_carry += delta * 1000.0
 	var ms: int = int(_ms_carry)
 	_ms_carry -= float(ms)
+	var before: int = session.remaining_ms
 	var step: Dictionary = session.tick(ms)
+	# 마지막 1초 경고 틱(04 오디오 표).
+	for mark: int in [1000, 500]:
+		if before > mark and session.remaining_ms <= mark and step.is_empty():
+			_feel("tick")
 	timer.set_time(session.remaining_ms, session.commit_ms)
 	if not step.is_empty():
 		_on_step(step)
@@ -112,6 +125,9 @@ func _safe_top() -> float:
 
 
 func _run() -> void:
+	# 대국 곡은 판 초반에 먹먹하게 시작한다. 구간마다 진행도만큼 밝아진다.
+	if feedback != null:
+		feedback.set_intensity(_progress())
 	world.set_standing(session.crowd_me, session.crowd_opp, _progress(), false)
 	ribbon.set_progress(maxi(session.segment_index + 1, 1), session.course.segment_count())
 	timer.set_time(session.commit_ms, session.commit_ms)
@@ -121,6 +137,8 @@ func _run() -> void:
 		if session.phase != DuelSession.Phase.COMMIT_WAIT and not session.present_next():
 			break
 		ribbon.set_progress(session.segment_index + 1, session.course.segment_count())
+		if feedback != null:
+			feedback.set_intensity(_progress())
 		world.opp_chip.set_locked(true)
 		var guided: int = Onboarding.guided_pick(session.segment_index) if tutorial else -1
 		await band.present(session.current_gates(), guided).finished
@@ -142,6 +160,7 @@ func _on_picked(index: int) -> void:
 
 func _on_step(step: Dictionary) -> void:
 	_waiting_commit = false
+	_feel("lock", 20, 0.3)
 	band.lock(int(step["pick_me"]))
 	timer.set_time(0, session.commit_ms)
 	committed.emit(step)
@@ -150,27 +169,40 @@ func _on_step(step: Dictionary) -> void:
 ## 공개 → 사건 연출 → 무리 변화. 한 구간의 해소 연출은 1.5초 안쪽이다(02 경험 타임라인).
 func _resolve(step: Dictionary) -> void:
 	world.opp_chip.set_locked(false)
+	_feel("flip")
 	await band.reveal(step, _opp_label()).finished
 	var events: Array = step["events"]
 	var d_me: int = int(step["me"]) - int(step["before_me"])
 	var d_opp: int = int(step["opp"]) - int(step["before_opp"])
+	# 소리와 햅틱은 03 피드백 표를 따른다. 뒤처져서 먼저 지나간 쪽과 앞서다 막힌 쪽을 구분한다.
 	if events.has("yield_to_a"):
+		_feel("yield_pass", 40, 0.6)
 		world.block(false)
 	elif events.has("yield_to_b"):
+		_feel("yield_block", 60, 1.0)
 		world.block(true)
+	elif events.has("split_even"):
+		_feel("split", 20, 0.3)
 	if events.has("steal_a"):
+		_feel("steal")
 		world.transfer(true, d_me)
 	elif events.has("steal_b"):
+		_feel("steal", 40, 0.6)
 		world.transfer(false, d_opp)
 	elif events.has("shield_counter_b"):
+		_feel("counter", 60, 1.0)
 		await world.counter(true).finished
 		world.transfer(false, d_opp)
 	elif events.has("shield_counter_a"):
+		_feel("counter", 60, 1.0)
 		await world.counter(false).finished
 		world.transfer(true, d_me)
 	if d_me > 0:
+		# 증가량이 클수록 음이 높고 햅틱이 길다.
+		_feel("grow", 10 + mini(d_me, 40), 0.4, 1.0 + minf(float(d_me) / 120.0, 0.5))
 		world.burst(true, d_me)
 	elif d_me < 0:
+		_feel("shrink", 20, 0.3)
 		world.sink(true, -d_me)
 	if d_opp > 0:
 		world.burst(false, d_opp)
@@ -189,7 +221,9 @@ func _finale() -> void:
 		tint = Palette.MINE
 	elif result == DuelEngine.RESULT_B_WIN:
 		tint = Palette.OPP
-	_shake()
+	_feel("crash", 80, 1.0)
+	if not reduce_shake:
+		_shake()
 	await get_tree().create_timer(0.3).timeout
 	_flash.color = Color(tint, 0.28)
 	var fade: Tween = create_tween()
@@ -211,6 +245,14 @@ func _shake() -> void:
 		var offset: Vector2 = Vector2(8 if i % 2 == 0 else -8, 4 if i < 2 else -4) * Palette.DP
 		tween.tween_property(world, "position", offset, 0.04)
 	tween.tween_property(world, "position", Vector2.ZERO, 0.05)
+
+
+func _feel(sound: String, vibrate_ms: int = 0, strength: float = 0.0, pitch: float = 1.0) -> void:
+	if feedback == null:
+		return
+	feedback.play(sound, pitch)
+	if vibrate_ms > 0:
+		feedback.vibrate(vibrate_ms, strength)
 
 
 func _open_pause() -> void:

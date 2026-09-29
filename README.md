@@ -22,7 +22,8 @@
 **대국 조정·기록 재생·봇 폴백·로컬 저장**, 3·5주차 범위인 **대국 화면(SCR-002)·온보딩(SCR-004)·
 결과(SCR-003)·홈(SCR-001)** 이 구현돼 있다. 실행하면 첫 실행은 온보딩 대국, 그 뒤로는 홈에서 시작한다.
 시각 방향은 A-0 B안 "하나의 언덕길"과 A-1 1안 "한낮 장터"이며 기록은 `docs/game-design/ui/README.md` 에 있다.
-꾸미기(SCR-005)·설정(SCR-006)·소리·햅틱은 아직 없다.
+꾸미기(SCR-005)·설정(SCR-006)·효과음·배경음악·햅틱도 들어 있다. 에셋의 제작 방식과 권리 근거는
+`game/assets/README.md` 에 있다.
 
 원격 기록은 아직 목 경계(`LocalRemoteRecordPort`)다. 목의 기록 풀은 **비어 있는 상태로 시작한다.**
 사람이 남긴 기록이 없는데 가짜 기록에 사람 이름을 붙이면 봇을 사람으로 위장하게 되기 때문이다(DEC-003).
@@ -125,8 +126,11 @@ scripts/strategy_matrix.sh
 # 정적 검사 (컴파일 게이트와 같은 검사)
 scripts/lint.sh
 
-# 앱 흐름 스모크: 온보딩 → 결과 → 홈 → 대국 → 결과 (사용자 저장과 분리된 경로)
+# 앱 흐름 스모크: 온보딩 → 결과 → 홈 → 대국 → 결과 → 꾸미기 → 설정 (사용자 저장과 분리된 경로)
 scripts/smoke.sh
+
+# 효과음 절차 생성 (결정론, 외부 음원 없음)
+python3 scripts/make_sfx.py
 
 # 실행 화면 캡처 (창을 띄워 실제 렌더러로 그린다)
 godot --path game --resolution 540x1170 --script res://tools/capture_screens.gd -- --out docs/game-design/ui/runtime/1080x2340-ko

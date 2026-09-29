@@ -190,6 +190,8 @@ func _reward_line() -> Label:
 		parts.append(tr("DAILY_FIRST_WIN"))
 	if int(reward.get("band_after", 0)) > int(reward.get("band_before", 0)):
 		parts.append(tr("BAND_UP") % int(reward["band_after"]))
+	if not (reward.get("items", []) as Array).is_empty():
+		parts.append(tr("NEW_ITEM"))
 	if parts.is_empty():
 		return null
 	var label: Label = _text(" · ".join(parts), 16, 700, Palette.INK)
