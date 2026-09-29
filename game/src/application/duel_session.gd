@@ -100,6 +100,21 @@ func result() -> int:
 	return DuelEngine.RESULT_DRAW
 
 
+## 결정적 구간: 격차(내 수 - 상대 수)가 가장 크게 움직인 구간. 결과 화면이 되짚어 보여 준다.
+## 같으면 앞 구간을 고른다. 구간이 없으면 -1.
+func decisive_segment() -> int:
+	var best: int = -1
+	var best_swing: int = -1
+	for entry: Dictionary in trace:
+		var before: int = int(entry["before_me"]) - int(entry["before_opp"])
+		var after: int = int(entry["me"]) - int(entry["opp"])
+		var swing: int = absi(after - before)
+		if swing > best_swing:
+			best_swing = swing
+			best = int(entry["segment"])
+	return best
+
+
 ## 이 판을 남의 상대가 될 기록으로 만든다. 선택 시퀀스만 담는다(DEC-009).
 func to_record(display_name: String, created_at: int) -> ReplayRecord:
 	assert(is_finished())

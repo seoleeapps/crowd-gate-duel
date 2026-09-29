@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  /* 브라우저에서 파일을 바로 열 수 있도록 기본값을 직접 선언한다. */
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-size: 14px; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>갈림길 대국 화면 시각 방향</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&family=Fredoka:wght@600;700&family=Rubik:wght@700;800&family=Baloo+2:wght@700;800&display=swap">
+<style>
+  :root {
+    --ink: #24211d;
+    --ink-soft: #55504a;
+    --ink-faint: #736d65;
+    --ground: #f5f3ef;
+    --panel: #fffefb;
+    --rule: #ddd8d0;
+    --rule-strong: #b9b2a8;
+    --mine: #b8500f;
+    --mine-wash: #f6e4d7;
+    --theirs: #0e6f66;
+    --sans: "Noto Sans KR", system-ui, -apple-system, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #ece7df; --ink-soft: #b3aca2; --ink-faint: #958e84;
+      --ground: #16150f; --panel: #201e18; --rule: #37342c; --rule-strong: #565044;
+      --mine: #e8823f; --mine-wash: #3a2416; --theirs: #46b3a6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #ece7df; --ink-soft: #b3aca2; --ink-faint: #958e84;
+    --ground: #16150f; --panel: #201e18; --rule: #37342c; --rule-strong: #565044;
+    --mine: #e8823f; --mine-wash: #3a2416; --theirs: #46b3a6;
+  }
+
+  body { background: var(--ground); color: var(--ink); font-family: var(--sans); line-height: 1.6; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 16px 64px; }
+
+  header.intro { border-bottom: 1px solid var(--rule); padding-bottom: 28px; margin-bottom: 36px; }
+  h1 { font-size: clamp(24px, 4vw, 34px); font-weight: 700; margin: 0 0 6px; letter-spacing: -0.02em; text-wrap: balance; }
+  .sub { color: var(--ink-soft); margin: 0 0 20px; max-width: 66ch; }
+  .situation {
+    display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 14px 16px;
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 4px;
+    font-family: var(--mono); font-size: 12.5px; color: var(--ink-soft);
+  }
+  .situation b { color: var(--ink); font-weight: 600; }
+  .decision { margin: 24px 0 0; padding: 16px 18px; border-left: 3px solid var(--mine); background: var(--mine-wash); border-radius: 0 4px 4px 0; }
+  .decision p { margin: 0; font-size: 14.5px; }
+
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 22px; align-items: start; }
+  .opt { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+  .opt > header { padding: 16px 18px 12px; border-bottom: 1px solid var(--rule); }
+  .opt h2 { margin: 0 0 3px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+  .opt .tag { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
+  .opt .concept { margin: 6px 0 0; font-size: 13px; color: var(--ink-soft); }
+  .phone { padding: 16px 12px 8px; display: flex; justify-content: center; }
+  .phone .screen { zoom: 0.86; border-radius: 26px; box-shadow: 0 0 0 2px var(--rule-strong); }
+
+  .states { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 6px 18px 4px; }
+  .states figure { margin: 0; }
+  .states svg { display: block; width: 100%; height: auto; border-radius: 8px; box-shadow: 0 0 0 1px var(--rule-strong); }
+  .states figcaption { font-size: 12px; color: var(--ink-soft); margin-top: 4px; text-align: center; }
+
+  .swatches { display: flex; gap: 6px; padding: 10px 18px 0; align-items: center; flex-wrap: wrap; }
+  .swatches i { width: 18px; height: 18px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); }
+  .swatches span { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-right: 4px; }
+
+  .notes { padding: 12px 18px 18px; }
+  .notes dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13px; }
+  .notes dt { font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; padding-top: 3px; }
+  .notes dd { margin: 0; color: var(--ink-soft); }
+  .notes dd.good { color: var(--ink); }
+
+  .legend { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--rule); }
+  .legend h3 { font-size: 15px; margin: 0 0 10px; }
+  .legend ul { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 14px; }
+  .legend li { margin-bottom: 5px; }
+  .legend b { color: var(--ink); }
+  .icons { display: flex; gap: 18px; flex-wrap: wrap; margin: 4px 0 16px; }
+  .icons figure { margin: 0; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); }
+  .icons svg { width: 34px; height: 34px; color: var(--ink); }
+
+  /* ---------- 폰 화면 (360 x 780 dp, 1080 x 2340 px 의 1/3) ---------- */
+  .screen {
+    position: relative; width: 360px; height: 780px; overflow: hidden; flex: none;
+    font-family: var(--sans); background: var(--s-bg);
+  }
+  .screen .world { position: absolute; left: 0; top: 0; width: 360px; height: 561.6px; display: block; }
+  .screen .ribbon { position: absolute; left: 0; right: 0; top: 0; height: 70.2px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+  .ribbon .seg { font-family: var(--num); font-weight: 700; font-size: 17px; color: var(--s-ribbon-text); min-width: 42px; letter-spacing: .01em; }
+  .ribbon .steps { flex: 1; display: flex; gap: 5px; align-items: center; }
+  .ribbon .steps i { flex: 1; height: 8px; border-radius: 4px; background: var(--s-step-off); box-shadow: inset 0 0 0 1px var(--s-step-line); }
+  .ribbon .steps i.done { background: var(--s-step-on); box-shadow: none; }
+  .ribbon .steps i.now { height: 14px; background: var(--s-step-now); box-shadow: 0 0 0 2px var(--s-step-on); }
+  .ribbon .pause { width: 48px; height: 48px; border-radius: 14px; flex: none; display: grid; place-items: center; background: var(--s-pause-bg); box-shadow: inset 0 0 0 1.5px var(--s-pause-line); }
+  .ribbon .pause::before { content: ""; width: 14px; height: 16px; border-left: 4.5px solid var(--s-pause-ink); border-right: 4.5px solid var(--s-pause-ink); box-sizing: border-box; }
+
+  .screen .gates { position: absolute; left: 0; right: 0; top: 561.6px; height: 163.8px; display: flex; background: var(--s-band); border-top: var(--s-band-top); }
+  .gate { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; position: relative; }
+  .gate + .gate { border-left: var(--s-divider); }
+  .gate svg { width: 46px; height: 46px; color: var(--s-icon); }
+  .gate b { font-family: var(--num); font-weight: 800; font-size: 32px; line-height: 1; color: var(--s-val); letter-spacing: -.01em; }
+  .screen .timer { position: absolute; left: 0; right: 0; bottom: 0; height: 54.6px; display: flex; align-items: center; gap: 12px; padding: 0 18px; background: var(--s-timer-bg); }
+  .timer .bar { flex: 1; height: 12px; border-radius: 6px; background: var(--s-timer-track); overflow: hidden; }
+  .timer .bar i { display: block; height: 100%; width: 70%; background: var(--s-timer-fill); border-radius: 6px; }
+  .timer b { font-family: var(--num); font-weight: 700; font-size: 20px; color: var(--s-timer-text); min-width: 36px; text-align: right; }
+
+  /* 단독 렌더링: ?solo=a */
+  body.solo { background: #000; }
+  body.solo .wrap { padding: 0; max-width: none; }
+  body.solo .intro, body.solo .legend, body.solo .opt > header, body.solo .notes, body.solo .states, body.solo .swatches { display: none; }
+  body.solo .opt { border: 0; border-radius: 0; background: none; }
+  body.solo .opt:not(.show) { display: none; }
+  body.solo .options { display: block; }
+  body.solo .phone { padding: 0; }
+  body.solo .phone .screen { zoom: 1; border-radius: 0; box-shadow: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="intro">
+    <h1>갈림길 대국 화면 시각 방향</h1>
+    <p class="sub">
+      배치는 <b>B안 “하나의 언덕길”</b>로 정해졌다(A-0). 이 문서는 그 배치 위에서 <b>색·재질·서체·군중 표현</b>만 다르게 한 세 방향을 비교한다(A-1).
+      세 안 모두 같은 순간을 그렸다. 폰 화면은 360×780 dp, 곧 1080×2340 px 기기의 실제 크기다.
+    </p>
+    <div class="situation">
+      <span><b>4구간</b> / 7</span>
+      <span>나 <b>44</b></span>
+      <span>상대 <b>31</b></span>
+      <span>확약 <b>2.1초</b> 남음</span>
+      <span>게이트 <b>불리기 ×1.6 · 모으기 +28 · 빼앗기 20%</b></span>
+    </div>
+    <div class="decision">
+      <p>
+        <strong>먼저 볼 것:</strong> 각 화면을 1초만 보고 누가 앞서는지 알 수 있는가.
+        숫자보다 <strong>무리의 높이</strong>가 먼저 들어와야 한다. 아래 작은 두 장면은 계약상 반드시 보여야 하는 상태다.
+        왼쪽은 <strong>동수</strong>(누구도 앞서 보이면 안 된다), 오른쪽은 <strong>봇 상대</strong>(무채색 깃발과 배지)다.
+      </p>
+    </div>
+  </header>
+
+  <div class="options">
+    <section class="opt" id="opt-a">
+      <header>
+        <div class="tag">방향 1</div>
+        <h2>한낮 장터</h2>
+        <p class="concept">밝은 오후의 언덕. 외곽선 있는 인형이 자유롭게 모여 걷는다. 높이선 두 줄로 순위를 짚어 준다.</p>
+      </header>
+      <div class="phone"><div class="screen" data-dir="a"></div></div>
+      <div class="states" data-dir="a"></div>
+      <div class="swatches" data-dir="a"></div>
+      <div class="notes"><dl>
+        <dt>강점</dt><dd class="good">밝고 친근해서 첫인상이 가장 편하다. 무리 높이에 맞춘 색 점선 두 줄 덕분에 격차가 작아도 순위를 비교하기 쉽다.</dd>
+        <dt>약점</dt><dd>배경과 도로가 밝은 중립색이라 화면 전체가 조금 심심해 보일 수 있다. 햇빛 아래에서는 청록 무리가 주황보다 약간 덜 튄다.</dd>
+        <dt>구현</dt><dd>인형마다 얇은 외곽선이 붙는다. 200명을 넘으면 외곽선이 뭉개지므로 뒤쪽 덩어리 전환이 일찍 필요하다.</dd>
+      </dl></div>
+    </section>
+
+    <section class="opt" id="opt-b">
+      <header>
+        <div class="tag">방향 2</div>
+        <h2>해질녘 등불 행렬</h2>
+        <p class="concept">어두운 저녁 하늘과 줄 전구. 외곽선 없는 밝은 실루엣이 줄 맞춰 행진한다. 오른쪽 고도 눈금이 순위를 짚는다.</p>
+      </header>
+      <div class="phone"><div class="screen" data-dir="b"></div></div>
+      <div class="states" data-dir="b"></div>
+      <div class="swatches" data-dir="b"></div>
+      <div class="notes"><dl>
+        <dt>강점</dt><dd class="good">어두운 배경 위 밝은 무리라 명암 대비가 가장 강하다. 작은 화면에서도 무리 크기와 높이가 제일 먼저 읽힌다.</dd>
+        <dt>약점</dt><dd>밤 분위기라 “축제 행렬”의 밝은 즐거움이 덜하다. 결과 공유 카드와 스토어 이미지가 전체적으로 어둡게 보인다.</dd>
+        <dt>구현</dt><dd>외곽선이 없어 인형 수가 많아도 가장 가볍다. 줄 맞춘 대형은 개체 배치 계산이 단순하다.</dd>
+      </dl></div>
+    </section>
+
+    <section class="opt" id="opt-c">
+      <header>
+        <div class="tag">방향 3</div>
+        <h2>종이 오림 무대</h2>
+        <p class="concept">겹겹이 오린 종이 언덕과 흰 테두리 인형. 뒷줄은 한 덩어리 실루엣으로 합쳐 무리를 “양”으로 보여 준다.</p>
+      </header>
+      <div class="phone"><div class="screen" data-dir="c"></div></div>
+      <div class="states" data-dir="c"></div>
+      <div class="swatches" data-dir="c"></div>
+      <div class="notes"><dl>
+        <dt>강점</dt><dd class="good">“종이 인형” 콘셉트가 가장 직접 드러나 개성이 뚜렷하다. 뒷줄을 덩어리로 합치는 방식이 200명 이상의 밀도 규칙과 그대로 이어진다.</dd>
+        <dt>약점</dt><dd>종이 결과 그림자가 더해져 정보가 가장 많은 화면이 된다. 순위 보조 표시가 없어 격차가 작을 때는 높이만으로 판단해야 한다.</dd>
+        <dt>구현</dt><dd>흰 테두리와 종이 그림자 레이어가 추가된다. 배경 질감은 텍스처 한 장으로 끝나지만 인형 테두리는 셰이더나 이중 그리기가 필요하다.</dd>
+      </dl></div>
+    </section>
+  </div>
+
+  <section class="legend">
+    <h3>세 방향이 공통으로 지키는 것</h3>
+    <div class="icons" id="icon-legend"></div>
+    <ul>
+      <li><b>게이트 종류는 모양으로만</b> 구분한다. 불리기는 벌어지는 화살표 두 개, 모으기는 모이는 점들, 빼앗기는 갈고리, 방패는 둥근 방패다. 게이트 칸에는 진영색을 쓰지 않는다.</li>
+      <li><b>진영색은 두 가지뿐</b>이다. 나는 따뜻한 주황, 상대는 차가운 청록이다. 나머지는 모두 중립색이다.</li>
+      <li><b>순위는 높이</b>로 읽는다. 무리가 정상에 가까울수록 앞선다. 높이는 군중 수의 로그 값에 맞춘다.</li>
+      <li>군중 수는 <b>각 무리 바로 위</b>에만 붙인다. 별도 수치 패널이 없다.</li>
+      <li>무리는 <b>같은 인형 한 종의 반복</b>이다. 그린 인형 수가 실제 군중 수와 같다(44명, 31명, 16명).</li>
+      <li>구역 비율은 배치안과 같다. 진행 리본 9%, 언덕길 63%, 게이트 띠 21%(칸 높이 약 164 dp), 확약 타이머 7%.</li>
+      <li>일시정지 버튼은 48×48 dp다. 판 진행 중 광고나 추가 버튼이 없다.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+/* 결정론 난수: 시안이 열 때마다 같은 모습으로 나오게 한다 */
+function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+const ICONS = {
+  mul: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 42 V30 L12 10"/><path d="M24 30 L36 10"/><path d="M8 17 L12 9 L20 11"/><path d="M28 11 L36 9 L40 17"/></svg>',
+  add: '<svg viewBox="0 0 48 48" fill="currentColor" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><circle cx="24" cy="24" r="7"/><circle cx="7" cy="9" r="3.6" stroke="none"/><circle cx="41" cy="9" r="3.6" stroke="none"/><circle cx="7" cy="39" r="3.6" stroke="none"/><circle cx="41" cy="39" r="3.6" stroke="none"/><path d="M12 13 L16 17 M36 13 L32 17 M12 35 L16 31 M36 35 L32 31" fill="none"/></svg>',
+  steal: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="30" cy="7" r="3.4"/><path d="M30 11 V30 a10 10 0 0 1 -20 0 V25"/><path d="M5 30 L10 23 L15 30" /></svg>',
+  shield: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4"><circle cx="24" cy="24" r="18"/><circle cx="24" cy="24" r="8"/><circle cx="24" cy="24" r="2.5" fill="currentColor" stroke="none"/></svg>',
+};
+const BOT_ICON = (x, y, c) => `<g transform="translate(${x},${y})" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round"><rect x="0" y="4" width="14" height="10" rx="3"/><path d="M7 4 V1"/><circle cx="7" cy="0.6" r="1.1" fill="${c}" stroke="none"/><circle cx="4.5" cy="9" r="1.3" fill="${c}" stroke="none"/><circle cx="9.5" cy="9" r="1.3" fill="${c}" stroke="none"/></g>`;
+
+/* 방향별 토큰. 진영색 두 개와 중립색만 쓴다 */
+const DIRS = {
+  a: {
+    num: '"Fredoka", "Noto Sans KR", sans-serif', style: 'outline', form: 'loose', cue: 'lines',
+    sky: ['#f7efe2', '#fbf7f0'], sun: '#fbe3bf',
+    hills: ['#e4ddd0', '#d4cbbb', '#c2b7a4'], road: '#f8f3ea', roadEdge: '#a89d8b',
+    mine: '#ec7a2c', mineInk: '#3a2414', opp: '#1e9c90', oppInk: '#12302c', dollLine: '#2d2621',
+    chipMine: '#a84a0c', chipOpp: '#0c6b62', chipText: '#ffffff',
+    flagMine: '#ec7a2c', flagOpp: '#1e9c90', flagMark: '#ffffff', bot: '#9a948a', botMark: '#e8e4dc', pole: '#4a4038',
+    bunting: ['#fffaf0', '#d9cfbe', '#b3a893'], buntingLine: '#6d6457',
+    tie: '#5f5a52', tieBg: '#ffffff',
+    css: { '--s-bg': '#fbf7f0', '--s-ribbon-text': '#2b2622', '--s-step-off': '#fffaf0', '--s-step-line': '#8c8272', '--s-step-on': '#4a433b', '--s-step-now': '#fffaf0',
+      '--s-pause-bg': '#fffaf0', '--s-pause-line': '#4a433b', '--s-pause-ink': '#2b2622',
+      '--s-band': '#fffaf0', '--s-band-top': '2px solid #2b2622', '--s-divider': '1.5px solid #2b2622', '--s-icon': '#2b2622', '--s-val': '#2b2622',
+      '--s-timer-bg': '#fffaf0', '--s-timer-track': '#e6dfd2', '--s-timer-fill': '#2b2622', '--s-timer-text': '#2b2622' },
+    swatch: ['#ec7a2c', '#1e9c90', '#fbf7f0', '#d4cbbb', '#2b2622'],
+  },
+  b: {
+    num: '"Rubik", "Noto Sans KR", sans-serif', style: 'solid', form: 'rows', cue: 'gauge',
+    sky: ['#1b1d3f', '#3a3263'], sun: '#efe4c8',
+    hills: ['#2d2b56', '#242247', '#1b1a37'], road: '#383566', roadEdge: '#56538a',
+    mine: '#ff9a4f', mineInk: '#ff9a4f', opp: '#39d1c0', oppInk: '#39d1c0', dollLine: 'none',
+    chipMine: '#ff9a4f', chipOpp: '#39d1c0', chipText: '#16142c',
+    flagMine: '#ff9a4f', flagOpp: '#39d1c0', flagMark: '#16142c', bot: '#8c8aa3', botMark: '#3b3957', pole: '#d9d4e6',
+    bunting: ['#f6e7bf', '#f6e7bf', '#f6e7bf'], buntingLine: '#8b87b3', bulbs: true,
+    tie: '#e7e3f2', tieBg: '#2a2850',
+    css: { '--s-bg': '#141328', '--s-ribbon-text': '#f3eee6', '--s-step-off': 'transparent', '--s-step-line': '#8b87b3', '--s-step-on': '#e7e3f2', '--s-step-now': '#1b1d3f',
+      '--s-pause-bg': 'rgba(255,255,255,.06)', '--s-pause-line': '#8b87b3', '--s-pause-ink': '#f3eee6',
+      '--s-band': '#141328', '--s-band-top': '1px solid #56538a', '--s-divider': '1px solid #46437a', '--s-icon': '#f3eee6', '--s-val': '#ffffff',
+      '--s-timer-bg': '#141328', '--s-timer-track': '#2e2c55', '--s-timer-fill': '#f3eee6', '--s-timer-text': '#f3eee6' },
+    swatch: ['#ff9a4f', '#39d1c0', '#1b1d3f', '#383566', '#f3eee6'],
+  },
+  c: {
+    num: '"Baloo 2", "Noto Sans KR", sans-serif', style: 'paper', form: 'mass', cue: 'none',
+    sky: ['#dfe4ee', '#eef0f3'], sun: '#f7f3ea',
+    hills: ['#f3efe7', '#e6e0d5', '#d8d0c2'], road: '#fbf9f4', roadEdge: '#c9c0b0', paperShadow: 'rgba(80,68,52,.22)',
+    mine: '#e2702a', mineInk: '#e2702a', opp: '#17897e', oppInk: '#17897e', dollLine: '#ffffff',
+    chipMine: '#b0520f', chipOpp: '#0d6b62', chipText: '#ffffff',
+    flagMine: '#e2702a', flagOpp: '#17897e', flagMark: '#ffffff', bot: '#9b968d', botMark: '#f2efe9', pole: '#5b5249',
+    bunting: ['#ffffff', '#e6e0d5', '#cfc6b6'], buntingLine: '#8a8174',
+    tie: '#57524b', tieBg: '#ffffff',
+    css: { '--s-bg': '#eef0f3', '--s-ribbon-text': '#2f2a25', '--s-step-off': '#ffffff', '--s-step-line': '#b8afa0', '--s-step-on': '#5b5249', '--s-step-now': '#ffffff',
+      '--s-pause-bg': '#ffffff', '--s-pause-line': '#b8afa0', '--s-pause-ink': '#2f2a25',
+      '--s-band': '#fffdf8', '--s-band-top': '1px solid #d2c9ba', '--s-divider': '2px dashed #cfc6b6', '--s-icon': '#3a342e', '--s-val': '#2f2a25',
+      '--s-timer-bg': '#fffdf8', '--s-timer-track': '#ebe5da', '--s-timer-fill': '#5b5249', '--s-timer-text': '#2f2a25' },
+    swatch: ['#e2702a', '#17897e', '#eef0f3', '#e6e0d5', '#2f2a25'],
+  },
+};
+
+/* 종이 인형 한 종. 20 x 28 단위 */
+const DOLL_BODY = 'M4.5 9.5 H15.5 L19 16.5 L16.4 17.6 L14.6 14.5 L14.8 19 L16.2 27.5 H12.4 L10 21.5 L7.6 27.5 H3.8 L5.2 19 L5.4 14.5 L3.6 17.6 L1 16.5 Z';
+function doll(x, y, s, fill, line, lw, tilt) {
+  const st = line === 'none' ? '' : ` stroke="${line}" stroke-width="${lw}" stroke-linejoin="round" vector-effect="non-scaling-stroke"`;
+  return `<g transform="translate(${(x - 10 * s).toFixed(1)},${(y - 28 * s).toFixed(1)}) scale(${s}) rotate(${tilt} 10 28)" fill="${fill}"${st}><circle cx="10" cy="4.6" r="4.3"/><path d="${DOLL_BODY}"/></g>`;
+}
+function flag(x, y, s, color, mark, pole, pattern) {
+  // 막대 끝(x,y)에서 위로 올린 깃발. 무늬는 기하 도형 조합
+  const h = 30 * s, w = 20 * s, fh = 13 * s;
+  const top = y - h;
+  let pat = '';
+  if (pattern === 'chevron') pat = `<path d="M${x + 3 * s} ${top + 2.5 * s} L${x + 10 * s} ${top + fh / 2} L${x + 3 * s} ${top + fh - 2.5 * s}" fill="none" stroke="${mark}" stroke-width="${2.4 * s}" stroke-linejoin="round"/>`;
+  if (pattern === 'dot') pat = `<circle cx="${x + w / 2}" cy="${top + fh / 2}" r="${3.4 * s}" fill="${mark}"/>`;
+  if (pattern === 'bars') pat = `<path d="M${x + 6 * s} ${top + 2 * s} V${top + fh - 2 * s} M${x + 12 * s} ${top + 2 * s} V${top + fh - 2 * s}" stroke="${mark}" stroke-width="${2.2 * s}"/>`;
+  return `<path d="M${x} ${y} V${top}" stroke="${pole}" stroke-width="${1.6 * s}" stroke-linecap="round"/>` +
+    `<path d="M${x} ${top} H${x + w} L${x + w - 3.5 * s} ${top + fh / 2} L${x + w} ${top + fh} H${x} Z" fill="${color}"/>` + pat;
+}
+
+/* 무리 그리기: 도로 방향(dx,dy)을 따라 배치해 도로 위에 선다. 인형 수 = 군중 수 */
+function crowd(D, o) {
+  const r = rng(o.seed);
+  const len = Math.hypot(o.dir[0], o.dir[1]);
+  const ux = o.dir[0] / len, uy = o.dir[1] / len;   // 도로 방향
+  const nx = -uy, ny = ux;                          // 도로 폭 방향
+  const across = o.across || 4;
+  const along = Math.ceil(o.n / across);
+  const gapA = o.gapA || 11, gapN = o.gapN || 10.5;
+  const pts = [];
+  for (let i = 0; i < o.n; i++) {
+    const a = Math.floor(i / across), k = i % across;
+    let u = (a - (along - 1) / 2) * gapA, v = (k - (across - 1) / 2) * gapN;
+    if (D.form === 'loose') { u += (r() - .5) * 7; v += (r() - .5) * 6; }
+    if (D.form === 'rows') { u += (k % 2) * gapA / 2; }  // 행렬 대형: 줄마다 반 칸 엇갈린다
+    if (D.form === 'mass') { u += (r() - .5) * 4; v += (r() - .5) * 3; }
+    pts.push({ x: o.cx + u * ux + v * nx, y: o.cy + u * uy + v * ny, t: D.form === 'rows' ? 0 : Math.round((r() - .5) * 10) });
+  }
+  pts.sort((p, q) => p.y - q.y);
+  const s = o.scale || 0.62;
+  const fill = o.side === 'mine' ? D.mine : D.opp;
+  let out = '';
+  if (D.style === 'paper') {
+    // 뒷줄은 한 덩어리 실루엣으로 합친다(200명 초과 규칙의 미리보기)
+    const back = pts.slice(0, Math.floor(pts.length * 0.5)), front = pts.slice(Math.floor(pts.length * 0.5));
+    const massSil = back.map(p => doll(p.x, p.y, s, fill, 'none', 0, p.t)).join('');
+    const frontSil = front.map(p => doll(p.x, p.y, s, fill, 'none', 0, p.t)).join('');
+    out += `<g filter="url(#paperEdge-${o.uid})">${massSil}${frontSil}</g>`;
+    out += `<g opacity=".22">${back.map(p => doll(p.x, p.y, s, '#2a1c12', 'none', 0, p.t)).join('')}</g>`;
+    out += front.map(p => doll(p.x, p.y, s, fill, '#ffffff', 1.3, p.t)).join('');
+  } else {
+    out += pts.map(p => doll(p.x, p.y, s, fill, D.dollLine, 1, p.t)).join('');
+  }
+  // 깃발: 무리 앞쪽 인형 몇 명이 든다
+  const bearers = o.flags || 2;
+  const fl = [];
+  const sortedX = [...pts].sort((p, q) => p.x - q.x);
+  for (let i = 0; i < bearers; i++) {
+    const p = sortedX[Math.round((i + 1) * (sortedX.length - 1) / (bearers + 1))];
+    const color = o.bot ? D.bot : (o.side === 'mine' ? D.flagMine : D.flagOpp);
+    const mark = o.bot ? D.botMark : D.flagMark;
+    fl.push(flag(p.x + 5 * s, p.y - 16 * s, 1, color, mark, D.pole, o.side === 'mine' ? 'chevron' : (o.bot ? 'bars' : 'dot')));
+  }
+  out += fl.join('');
+  const topY = Math.min(...pts.map(p => p.y)) - 28 * s;
+  const ext = { top: Math.min(topY, Math.min(...pts.map(p => p.y)) - 16 * s - 30), bottom: Math.max(...pts.map(p => p.y)), minX: sortedX[0].x, maxX: sortedX[sortedX.length - 1].x };
+  return { svg: out, ext };
+}
+
+function chip(D, cx, y, label, num, side, extra) {
+  // 군중 수 표식. 무리 바로 위에 붙는다
+  const bg = side === 'mine' ? D.chipMine : side === 'opp' ? D.chipOpp : D.tieBg;
+  const fg = side === 'tie' ? D.tie : D.chipText;
+  const botW = extra === 'bot' ? 38 : 0;
+  const w = 30 + label.length * 14 + String(num).length * 15 + botW;
+  const x = cx - w / 2;
+  let s = `<g font-family='${D.num}'>`;
+  s += `<rect x="${x}" y="${y - 30}" width="${w}" height="30" rx="15" fill="${bg}" ${D.style === 'outline' ? `stroke="${D.dollLine}" stroke-width="1.5"` : D.style === 'paper' ? 'stroke="#ffffff" stroke-width="2.5"' : ''}/>`;
+  s += `<path d="M${cx - 6} ${y} L${cx} ${y + 7} L${cx + 6} ${y} Z" fill="${bg}"/>`;
+  let tx = x + 12;
+  if (extra === 'bot') {
+    s += `<rect x="${x + 5}" y="${y - 26}" width="${botW}" height="22" rx="11" fill="${D.chipText === '#ffffff' ? 'rgba(255,255,255,.22)' : 'rgba(0,0,0,.14)'}"/>`;
+    s += BOT_ICON(x + 11, y - 22, fg);
+    s += `<text x="${x + 28}" y="${y - 10}" font-family="Noto Sans KR" font-weight="700" font-size="11" fill="${fg}">봇</text>`;
+    tx += botW;
+  }
+  s += `<text x="${tx}" y="${y - 9.5}" font-family="Noto Sans KR" font-weight="700" font-size="13" fill="${fg}">${label}</text>`;
+  s += `<text x="${x + w - 12}" y="${y - 8}" text-anchor="end" font-weight="800" font-size="21" fill="${fg}">${num}</text>`;
+  return s + '</g>';
+}
+
+function defs(D, uid, W, H) {
+  let d = `<defs><linearGradient id="sky-${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${D.sky[0]}"/><stop offset="1" stop-color="${D.sky[1]}"/></linearGradient>`;
+  d += `<filter id="paperEdge-${uid}" x="-10%" y="-20%" width="120%" height="140%"><feMorphology in="SourceAlpha" operator="dilate" radius="2.2" result="d"/><feFlood flood-color="#ffffff"/><feComposite in2="d" operator="in" result="w"/><feOffset in="d" dx="1.5" dy="2.5" result="sd"/><feFlood flood-color="rgba(60,48,36,.28)"/><feComposite in2="sd" operator="in" result="sh"/><feMerge><feMergeNode in="sh"/><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  d += `<filter id="grain-${uid}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .35  0 0 0 0 .3  0 0 0 0 .25  0 0 0 .09 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>`;
+  d += `<filter id="drop-${uid}" x="-5%" y="-20%" width="110%" height="140%"><feOffset dx="0" dy="-4" in="SourceAlpha" result="o"/><feFlood flood-color="${D.paperShadow || 'transparent'}"/><feComposite in2="o" operator="in" result="s"/><feMerge><feMergeNode in="s"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  return d + '</defs>';
+}
+
+/* 배경: 하늘 + 언덕 3레이어(패럴랙스) */
+function backdrop(D, uid, W, H, hillYs) {
+  const r = rng(7);
+  let s = `<rect width="${W}" height="${H}" fill="url(#sky-${uid})"/>`;
+  if (D.style === 'solid') {
+    // 별 몇 개와 달
+    for (let i = 0; i < 26; i++) s += `<circle cx="${(r() * W).toFixed(1)}" cy="${(r() * H * .35).toFixed(1)}" r="${(0.6 + r() * 1.1).toFixed(1)}" fill="#efe9da" opacity="${(.35 + r() * .5).toFixed(2)}"/>`;
+    s += `<circle cx="${W * .8}" cy="${H * .2}" r="18" fill="${D.sun}" opacity=".9"/>`;
+  } else {
+    s += `<circle cx="${W * .78}" cy="${H * .19}" r="34" fill="${D.sun}"/>`;
+  }
+  const flt = D.style === 'paper' ? ` filter="url(#drop-${uid})"` : '';
+  D.hills.forEach((c, i) => {
+    const y0 = hillYs[i], amp = 26 - i * 4;
+    const ph = i * 1.7;
+    let p = `M0 ${H} L0 ${y0}`;
+    for (let x = 0; x <= W; x += 12) p += ` L${x} ${(y0 + Math.sin(x / (70 + i * 25) + ph) * amp + Math.sin(x / 31 + i) * 4).toFixed(1)}`;
+    p += ` L${W} ${H} Z`;
+    s += `<path d="${p}" fill="${c}"${flt} ${D.style === 'outline' ? `stroke="${D.roadEdge}" stroke-width="1" stroke-opacity=".6"` : ''}/>`;
+  });
+  if (D.style === 'paper') s += `<rect width="${W}" height="${H}" filter="url(#grain-${uid})" fill="#fff"/>`;
+  return s;
+}
+
+function road(D, d, w) {
+  let s = `<path d="${d}" fill="none" stroke="${D.roadEdge}" stroke-width="${w + (D.style === 'solid' ? 3 : 5)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  s += `<path d="${d}" fill="none" stroke="${D.road}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  if (D.style !== 'solid') s += `<path d="${d}" fill="none" stroke="${D.roadEdge}" stroke-width="1.2" stroke-dasharray="3 9" stroke-linecap="round" opacity=".7"/>`;
+  return s;
+}
+
+function bunting(D, x1, x2, y) {
+  // 정상 결승선: 두 기둥 사이 삼각 깃발 줄(B는 줄 전구)
+  let s = `<path d="M${x1} ${y + 26} V${y - 6} M${x2} ${y + 26} V${y - 6}" stroke="${D.pole}" stroke-width="2.2" stroke-linecap="round"/>`;
+  s += `<path d="M${x1} ${y} Q${(x1 + x2) / 2} ${y + 12} ${x2} ${y}" fill="none" stroke="${D.buntingLine}" stroke-width="1.2"/>`;
+  const n = 9;
+  for (let i = 1; i < n; i++) {
+    const t = i / n, x = x1 + (x2 - x1) * t, yy = y + 12 * 4 * t * (1 - t) * .5 * 2;
+    if (D.bulbs) s += `<circle cx="${x}" cy="${yy + 3}" r="3" fill="${D.bunting[0]}"/><circle cx="${x}" cy="${yy + 3}" r="6" fill="${D.bunting[0]}" opacity=".18"/>`;
+    else s += `<path d="M${x - 6} ${yy} L${x + 6} ${yy} L${x} ${yy + 12} Z" fill="${D.bunting[i % 3]}" stroke="${D.buntingLine}" stroke-width=".9"/>`;
+  }
+  s += `<path d="M${x1 + 4} ${y + 26} H${x2 - 4}" stroke="${D.buntingLine}" stroke-width="2" stroke-dasharray="6 4"/>`;
+  return s;
+}
+
+/* 대국 화면 세계(하늘부터 게이트 띠 위까지). 좌표는 dp */
+function world(key) {
+  const D = DIRS[key], uid = 'w' + key, W = 360, H = 561.6;
+  let s = `<svg class="world" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${defs(D, uid, W, H)}`;
+  s += backdrop(D, uid, W, H, [150, 250, 380]);
+  // 하나의 언덕길: 아래에서 정상까지 두 번 꺾인다
+  const P = [[300, 640], [74, 440], [288, 268], [180, 152]];
+  const d = `M${P[0][0]} ${P[0][1]} L${P[1][0]} ${P[1][1]} L${P[2][0]} ${P[2][1]} L${P[3][0]} ${P[3][1]}`;
+  s += road(D, d, 70);
+  s += bunting(D, 128, 232, 100);
+  // 위치: 로그 스케일로 정한 높이. 나 44 → 위, 상대 31 → 아래
+  const me = { cx: 74 + (288 - 74) * .68, cy: 440 + (268 - 440) * .68 };
+  const op = { cx: 300 + (74 - 300) * .66, cy: 640 + (440 - 640) * .66 };
+  const scale = D.style === 'solid' ? 0.64 : 0.62;
+  const cm = crowd(D, { n: 44, cx: me.cx, cy: me.cy + 12, dir: [214, -172], side: 'mine', seed: 11, uid, scale, across: 4, flags: 2 });
+  const co = crowd(D, { n: 31, cx: op.cx, cy: op.cy + 12, dir: [-226, -200], side: 'opp', seed: 29, uid, scale, across: 4, flags: 2 });
+  // 순위 보조 표시
+  const meTop = cm.ext.top, opTop = co.ext.top;
+  if (D.cue === 'lines') {
+    s += `<path d="M0 ${me.cy + 12} H${W}" stroke="${D.chipMine}" stroke-width="1.6" stroke-dasharray="2 5" stroke-linecap="round" opacity=".85"/>`;
+    s += `<path d="M0 ${op.cy + 12} H${W}" stroke="${D.chipOpp}" stroke-width="1.6" stroke-dasharray="2 5" stroke-linecap="round" opacity=".85"/>`;
+  }
+  if (D.cue === 'gauge') {
+    const gx = 346, g0 = 110, g1 = 548;
+    s += `<path d="M${gx} ${g0} V${g1}" stroke="#8b87b3" stroke-width="1.5"/>`;
+    for (let y = g0; y <= g1; y += 24) s += `<path d="M${gx - 4} ${y} H${gx}" stroke="#8b87b3" stroke-width="1.2"/>`;
+    s += `<path d="M${gx - 12} ${me.cy + 12} L${gx - 1} ${me.cy + 5} V${me.cy + 19} Z" fill="${D.mine}"/>`;
+    s += `<path d="M${gx - 12} ${op.cy + 12} L${gx - 1} ${op.cy + 5} V${op.cy + 19} Z" fill="${D.opp}"/>`;
+  }
+  s += co.svg + cm.svg;
+  s += chip(D, me.cx - 4, meTop - 4, '나', 44, 'mine');
+  s += chip(D, op.cx + 6, opTop - 4, '상대', 31, 'opp');
+  return s + '</svg>';
+}
+
+/* 보조 상태 장면: 동수 16:16, 봇 상대 */
+function mini(key, kind) {
+  const D = DIRS[key], uid = key + kind, W = 360, H = 200;
+  let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${kind === 'tie' ? '동수 상태' : '봇 상대 표시'}">${defs(D, uid, W, H)}`;
+  s += backdrop(D, uid, W, H, [60, 100, 140]);
+  s += road(D, `M-20 168 L380 168`, 56);
+  const scale = D.style === 'solid' ? 0.64 : 0.62;
+  if (kind === 'tie') {
+    const a = crowd(D, { n: 16, cx: 96, cy: 176, dir: [1, 0], side: 'mine', seed: 5, uid, scale, across: 4, flags: 1 });
+    const b = crowd(D, { n: 16, cx: 264, cy: 176, dir: [1, 0], side: 'opp', seed: 9, uid, scale, across: 4, flags: 1 });
+    const top = Math.min(a.ext.top, b.ext.top);
+    s += `<path d="M20 ${top - 36} H340" stroke="${D.tie}" stroke-width="1.6" stroke-dasharray="2 5" stroke-linecap="round"/>`;
+    s += a.svg + b.svg;
+    s += chip(D, 96, top - 4, '나', 16, 'mine');
+    s += chip(D, 264, top - 4, '상대', 16, 'opp');
+    // 가운데 중립 표식: 같은 높이
+    const cy = top - 18;
+    s += `<g><rect x="146" y="${cy - 17}" width="68" height="34" rx="17" fill="${D.tieBg}" stroke="${D.tie}" stroke-width="2"/>`;
+    s += `<path d="M158 ${cy - 4} H172 M158 ${cy + 4} H172" stroke="${D.tie}" stroke-width="3" stroke-linecap="round"/>`;
+    s += `<text x="178" y="${cy + 5.5}" font-family="Noto Sans KR" font-weight="700" font-size="15" fill="${D.tie}">동수</text></g>`;
+  } else {
+    const b = crowd(D, { n: 31, cx: 180, cy: 176, dir: [1, 0], side: 'opp', seed: 29, uid, scale, across: 4, flags: 2, bot: true });
+    s += b.svg;
+    s += chip(D, 180, b.ext.top - 4, '', 31, 'opp', 'bot');
+  }
+  return s + '</svg>';
+}
+
+function screenHTML(key) {
+  const steps = [1, 2, 3, 4, 5, 6, 7].map(i => `<i class="${i < 4 ? 'done' : i === 4 ? 'now' : ''}"></i>`).join('');
+  const gate = (ic, v, label) => `<div class="gate" role="button" aria-label="${label}">${ICONS[ic]}<b>${v}</b></div>`;
+  return world(key) +
+    `<div class="ribbon"><span class="seg">4/7</span><div class="steps" aria-label="7구간 중 4구간">${steps}</div><div class="pause" role="button" aria-label="일시정지"></div></div>` +
+    `<div class="gates">${gate('mul', '×1.6', '불리기, 1.6배')}${gate('add', '+28', '모으기, 28명 더하기')}${gate('steal', '20%', '빼앗기, 상대의 20퍼센트')}</div>` +
+    `<div class="timer"><div class="bar"><i></i></div><b>2.1</b></div>`;
+}
+
+for (const key of Object.keys(DIRS)) {
+  const D = DIRS[key];
+  const el = document.querySelector(`.screen[data-dir="${key}"]`);
+  el.style.setProperty('--num', D.num);
+  for (const [k, v] of Object.entries(D.css)) el.style.setProperty(k, v);
+  el.innerHTML = screenHTML(key);
+  document.querySelector(`.states[data-dir="${key}"]`).innerHTML =
+    `<figure>${mini(key, 'tie')}<figcaption>동수 16 : 16</figcaption></figure><figure>${mini(key, 'bot')}<figcaption>봇 상대 · 무채색 깃발</figcaption></figure>`;
+  document.querySelector(`.swatches[data-dir="${key}"]`).innerHTML =
+    `<span>색</span>` + D.swatch.map(c => `<i style="background:${c}" title="${c}"></i>`).join('');
+}
+document.getElementById('icon-legend').innerHTML =
+  [['mul', '불리기'], ['add', '모으기'], ['steal', '빼앗기'], ['shield', '방패']].map(([k, n]) => `<figure>${ICONS[k]}<figcaption>${n}</figcaption></figure>`).join('');
+
+const solo = new URLSearchParams(location.search).get('solo');
+if (solo) { document.body.classList.add('solo'); document.getElementById('opt-' + solo).classList.add('show'); }
+</script>
+</body>
+</html>

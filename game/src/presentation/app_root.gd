@@ -1,60 +1,154 @@
 extends Control
-## 부트 화면. 아직 대국 화면이 없는 단계의 자리표시자이며 3주차에 SCR-002 로 대체된다.
+## 화면 전환 루트. 03 내비게이션 그래프를 따른다.
 ##
-## 빈 씬을 두지 않고 도메인 자체 점검을 돌리는 이유는 두 가지다. 첫째, 엔진이 메인 씬을
-## 요구하므로 컴파일 게이트(`godot --headless --quit`)가 통과하려면 하나는 있어야 한다.
-## 둘째, 실행하자마자 규칙·생성기·검증기가 살아 있는지 눈으로 확인할 수 있다.
+##   첫 실행 → 온보딩 대국 → 결과 → 홈
+##   홈 → 대국 → 결과 → 홈 / 한 판 더 / 보상 광고 재도전
+##
+## 화면은 입력과 연출만 맡고, 판 결과 반영·기록 업로드·진행 저장·분석 이벤트는 여기서 처리한다.
 
-const BOOT_SEED: String = "boot-check"
-
-@onready var status_label: Label = $Status
+var _current: Control
 
 
 func _ready() -> void:
-	var lines: PackedStringArray = []
-	lines.append("갈림길 군중 대전 — 도메인 자체 점검")
-	lines.append("")
+	theme = UiTheme.build()
+	var saved: DuelSession = DuelSession.from_dict(App.progress.in_progress())
+	if not App.progress.onboarding_done():
+		_start_onboarding()
+	elif saved != null:
+		# 진행 중이던 판은 남은 확약 시간부터 이어서 한다.
+		_start_duel(saved)
+	else:
+		_show_home()
 
-	var report: Dictionary = CourseValidator.generate_valid(BOOT_SEED, 3)
-	if not bool(report["ok"]):
-		lines.append("코스 생성 실패: %s" % ", ".join(report["failures"]))
-		_render(lines)
+
+func _swap(screen: Control) -> void:
+	if _current != null:
+		_current.queue_free()
+	_current = screen
+	add_child(screen)
+
+
+func _show_home() -> void:
+	var home: HomeScreen = HomeScreen.new()
+	home.setup(App.progress.band(), App.progress.feathers(), App.remote.is_online())
+	home.start_pressed.connect(_on_start_pressed)
+	_swap(home)
+	# 다음 판 상대 기록을 미리 1건 받아 둔다. 도착하지 않아도 시작을 막지 않는다.
+	App.resolver.prefetch(App.progress.band())
+	App.analytics.log_event("home_view", {"band": App.progress.band()})
+
+
+func _on_start_pressed() -> void:
+	App.analytics.log_event("duel_start_tap", {"band": App.progress.band()})
+	_start_new_duel()
+
+
+func _start_new_duel() -> void:
+	var band: int = App.progress.band()
+	var setup: Dictionary = App.resolver.take_setup(band, App.fallback_seed(band))
+	var opponent: Opponent = setup["opponent"]
+	App.analytics.log_event("opponent_resolved", {"opponent_kind": "bot" if opponent.is_bot() else "record"})
+	_start_duel(DuelSession.new(setup["course"], opponent, App.commit_ms(band)))
+
+
+## ad_allowed: 이 판이 지면 보상형 광고 재도전을 제안할지. 재도전 판에는 다시 제안하지 않는다(판당 1회).
+func _start_duel(session: DuelSession, ad_allowed: bool = true) -> void:
+	var screen: DuelScreen = DuelScreen.new()
+	screen.setup(session)
+	screen.committed.connect(_on_committed.bind(session, false))
+	screen.segment_resolved.connect(_save_in_progress.bind(session))
+	screen.finished.connect(_on_duel_finished.bind(session, ad_allowed))
+	_swap(screen)
+	App.analytics.log_event("level_start", {"band": session.course.band, "segment_count": session.course.segment_count()})
+
+
+func _start_onboarding() -> void:
+	var session: DuelSession = Onboarding.session()
+	var screen: DuelScreen = DuelScreen.new()
+	screen.setup(session, true)
+	screen.committed.connect(_on_committed.bind(session, true))
+	screen.finished.connect(_on_onboarding_finished.bind(session))
+	_swap(screen)
+	App.analytics.log_event("tutorial_begin")
+
+
+func _on_committed(step: Dictionary, session: DuelSession, tutorial: bool) -> void:
+	var gate: Gate = session.course.gates_at(int(step["segment"]))[int(step["pick_me"])]
+	App.analytics.log_event("gate_commit", {
+		"gate_type": Gate.kind_name(gate.kind),
+		"is_split": bool(step["split"]),
+		"my_crowd": int(step["before_me"]),
+		"opp_crowd": int(step["before_opp"]),
+		"auto": bool(step["auto"]),
+		"tutorial": tutorial,
+	})
+	if tutorial and (step["events"] as Array).has("yield_to_a"):
+		App.analytics.log_event("onboarding_split_seen", {"segment_index": int(step["segment"])})
+
+
+func _save_in_progress(session: DuelSession) -> void:
+	App.progress.set_in_progress(session.to_dict())
+	App.progress.write()
+
+
+func _on_duel_finished(scene: Image, session: DuelSession, ad_allowed: bool) -> void:
+	var reward: Dictionary = App.progress.apply_result(session.result(), App.today())
+	App.progress.set_in_progress({})
+	App.record_sync.submit(session.to_record("", App.now_unix()))
+	App.session_duel_count += 1
+	App.analytics.log_event("level_end", {
+		"band": session.course.band, "segment_count": session.course.segment_count(), "result": session.result(),
+	})
+	App.analytics.log_event("duel_finish", {"session_duel_index": App.session_duel_count})
+	_show_result(session, scene, reward, false, ad_allowed)
+
+
+func _on_onboarding_finished(scene: Image, session: DuelSession) -> void:
+	var feathers: int = App.progress.complete_onboarding()
+	App.progress.write()
+	App.analytics.log_event("tutorial_complete")
+	_show_result(session, scene, {"feathers": feathers}, true, false)
+
+
+func _show_result(session: DuelSession, scene: Image, reward: Dictionary, tutorial: bool, ad_allowed: bool) -> void:
+	var retries: int = 0
+	if ad_allowed and App.remote.is_online() and App.ads.is_available():
+		retries = App.progress.ad_retries_left(App.today())
+	var result: ResultScreen = ResultScreen.new()
+	result.setup(session, scene, reward, tutorial, retries)
+	result.rematch_pressed.connect(_on_rematch)
+	result.home_pressed.connect(_show_home)
+	result.share_pressed.connect(_on_share.bind(result, session, scene))
+	result.ad_retry_pressed.connect(_on_ad_retry.bind(session))
+	_swap(result)
+	App.analytics.log_event("result_view", {"result": session.result(), "tutorial": tutorial})
+
+
+func _on_rematch() -> void:
+	App.analytics.log_event("rematch_tap")
+	_start_new_duel()
+
+
+func _on_share(result: ResultScreen, session: DuelSession, scene: Image) -> void:
+	App.analytics.log_event("result_share_tap", {"result": session.result()})
+	var saved: int = 0
+	for card_size: Vector2i in [ShareCard.SQUARE, ShareCard.VERTICAL]:
+		var image: Image = await ShareCard.render(self, card_size, scene, session.crowd_me, session.crowd_opp, result.result_color())
+		var name: String = "result-%d-%dx%d" % [App.now_unix(), card_size.x, card_size.y]
+		if not App.share.share_image(image, name).is_empty():
+			saved += 1
+	if is_instance_valid(result):
+		result.show_toast(tr("SHARE_SAVED") if saved == 2 else tr("SHARE_FAILED"))
+
+
+## 보상형 광고 재도전: 옵트인 → 광고 → 끝까지 봤을 때만 같은 코스·같은 상대로 1회 재도전.
+func _on_ad_retry(session: DuelSession) -> void:
+	App.analytics.log_event("rewarded_retry_optin", {"placement": "result_retry"})
+	App.ads.show()
+	var rewarded: bool = await App.ads.finished
+	if not rewarded:
 		return
-
-	var course: Course = report["course"]
-	lines.append("코스 시드 %s / 대역 %d / 구간 %d (재시도 %d회)" % [
-		course.seed_text, course.band, course.segment_count(), int(report["attempts"])
-	])
-
-	var stats: Dictionary = CourseValidator.validate(course)["stats"]
-	lines.append("읽기 보상 %d%% · 선택 의미 %d%% · 역전 구간 %d%%" % [
-		int(stats.get("read_reward", 0)),
-		int(stats.get("skill_gap", 0)),
-		int(stats.get("flip_ratio", 0)),
-	])
-	lines.append("")
-
-	var duel: Dictionary = CourseValidator.simulate(
-		course, Strategies.Kind.LEADER_AWARE, Strategies.Kind.MAX_EXPECTED, 1
-	)
-	var replay: Dictionary = DuelEngine.play(course, duel["picks_a"], duel["picks_b"])
-	var reproduced: bool = int(replay["a"]) == int(duel["a"]) and int(replay["b"]) == int(duel["b"])
-
-	lines.append("표본 대국 (순위 인식 대 기대값 최대)")
-	for step: Dictionary in replay["trace"]:
-		lines.append("  구간 %d  %s  %d : %d" % [
-			int(step["segment"]) + 1,
-			"겹침" if bool(step["split"]) else "    ",
-			int(step["a"]),
-			int(step["b"]),
-		])
-	lines.append("")
-	lines.append("재생 일치: %s" % ("예" if reproduced else "아니오"))
-	_render(lines)
-
-
-func _render(lines: PackedStringArray) -> void:
-	var text: String = "\n".join(lines)
-	if status_label != null:
-		status_label.text = text
-	print(text)
+	App.analytics.log_event("ad_reward_earned", {"placement": "result_retry"})
+	App.progress.use_ad_retry(App.today())
+	App.progress.write()
+	_start_duel(DuelSession.new(session.course, session.opponent, session.commit_ms), false)

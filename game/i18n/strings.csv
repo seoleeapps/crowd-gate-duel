@@ -1,0 +1,38 @@
+keys,en,ko
+APP_NAME,Crowd Gate Duel,갈림길 군중 대전
+PLAY,Play,시작
+BAND_1,Rookie,입문
+BAND_2,Basic,기본
+BAND_3,Skilled,숙련
+BAND_4,Advanced,상위
+BAND_5,Master,최상
+BAND_LABEL,Band %d · %s,대역 %d · %s
+CHIP_ME,Me,나
+CHIP_OPP,Rival,상대
+CHIP_BOT,Bot,봇
+CHIP_PRACTICE,Practice,연습
+TIE,Tie,동수
+RESULT_WIN,Win,승리
+RESULT_LOSS,Lose,패배
+RESULT_DRAW,Draw,무승부
+REMATCH,Play again,한 판 더
+SHARE,Share,공유
+HOME,Home,홈
+SHARE_SAVED,Result card saved,결과 카드를 저장했어요
+SHARE_FAILED,Could not save the card,카드를 저장하지 못했어요
+AD_RETRY,Watch an ad to retry,광고 보고 다시 도전
+AD_RETRY_NOTICE,"Watch the whole ad to replay this same course once. Skip it and there is no retry.","광고를 끝까지 보면 같은 코스로 한 번 더 도전할 수 있어요. 건너뛰면 재도전은 없어요."
+AD_RETRY_LEFT,%d left today,오늘 %d번 남음
+DECISIVE,Turning point · segment %d,결정적 구간 · %d구간
+FEATHERS_GAINED,+%d feathers,깃털 +%d
+DAILY_FIRST_WIN,First win today,오늘 첫 승
+BAND_UP,Band %d unlocked,대역 %d 해금
+OFFLINE,Offline · you will face a bot,오프라인 · 봇과 대국합니다
+PAUSED,Paused,일시정지
+RESUME,Resume,계속
+A11Y_PAUSE,Pause,일시정지
+A11Y_GATE_MUL,"Multiply, times %s","불리기, %s배"
+A11Y_GATE_ADD,"Gather, add %d","모으기, %d명 더하기"
+A11Y_GATE_STEAL,"Steal %d percent of the rival","빼앗기, 상대의 %d퍼센트"
+A11Y_GATE_SHIELD,"Shield, counter %d percent","방패, 막으면 %d퍼센트 반격"
+A11Y_START,Start a duel,대국 시작

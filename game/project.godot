@@ -12,6 +12,10 @@ config/version="0.1.0"
 run/main_scene="res://src/presentation/app_root.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
+[autoload]
+
+App="*res://src/presentation/app.gd"
+
 [display]
 
 window/size/viewport_width=1080
@@ -19,6 +23,11 @@ window/size/viewport_height=2340
 window/handheld/orientation=1
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://i18n/strings.en.translation", "res://i18n/strings.ko.translation")
+locale/fallback="en"
 
 [input_devices]
 
@@ -29,3 +38,4 @@ pointing/emulate_touch_from_mouse=true
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.984, 0.969, 0.941, 1)

@@ -15,6 +15,9 @@ const FEATHERS_DRAW: int = 5
 const FEATHERS_DAILY_FIRST_WIN: int = 20
 ## 대역 n 을 여는 누적 승수. 대역은 내려가지 않는다(05 악용 경로).
 const BAND_UNLOCK_WINS: Array[int] = [0, 3, 15, 40, 80]
+const FEATHERS_ONBOARDING: int = 30
+## 보상형 광고 재도전 일 상한(DEC-007). 판당 1회는 결과 화면이 지킨다.
+const AD_RETRY_DAILY_CAP: int = 3
 
 var path: String
 var data: Dictionary = {}
@@ -37,6 +40,9 @@ static func defaults() -> Dictionary:
 		"draws": 0,
 		"feathers": 0,
 		"daily_first_win_date": "",
+		"onboarding_done": false,
+		"ad_retry_date": "",
+		"ad_retry_count": 0,
 		"in_progress": {},
 		"pending_upload": {},
 	}
@@ -102,6 +108,32 @@ func apply_result(result: int, today: String) -> Dictionary:
 		"band_before": band_before,
 		"band_after": band(),
 	}
+
+
+func onboarding_done() -> bool:
+	return bool(data["onboarding_done"])
+
+
+## 온보딩은 연습이라 전적과 대역에 넣지 않는다. 첫 해금 경험을 위한 깃털만 준다(05 보상 일정).
+func complete_onboarding() -> int:
+	if onboarding_done():
+		return 0
+	data["onboarding_done"] = true
+	data["feathers"] = feathers() + FEATHERS_ONBOARDING
+	return FEATHERS_ONBOARDING
+
+
+func ad_retries_left(today: String) -> int:
+	if str(data["ad_retry_date"]) != today:
+		return AD_RETRY_DAILY_CAP
+	return maxi(0, AD_RETRY_DAILY_CAP - int(data["ad_retry_count"]))
+
+
+func use_ad_retry(today: String) -> void:
+	if str(data["ad_retry_date"]) != today:
+		data["ad_retry_date"] = today
+		data["ad_retry_count"] = 0
+	data["ad_retry_count"] = int(data["ad_retry_count"]) + 1
 
 
 static func band_for_wins(win_count: int) -> int:
