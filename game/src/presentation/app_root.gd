@@ -13,6 +13,7 @@ const MUSIC_DUEL: AudioStream = preload("res://assets/audio/bgm_duel.ogg")
 const STING_WIN: AudioStream = preload("res://assets/audio/sting_win.wav")
 const STING_LOSE: AudioStream = preload("res://assets/audio/sting_lose.wav")
 
+var _stage: Stage
 var _current: Control
 ## 보상형 광고를 보는 중이면 true. 연타로 재도전이 두 번 걸리지 않게 막는다.
 var _ad_in_flight: bool = false
@@ -20,6 +21,8 @@ var _ad_in_flight: bool = false
 
 func _ready() -> void:
 	theme = UiTheme.build()
+	_stage = Stage.new()
+	add_child(_stage)
 	var in_progress: Dictionary = App.progress.in_progress()
 	var saved: DuelSession = DuelSession.from_dict(in_progress.get("session", {}))
 	if not App.progress.onboarding_done():
@@ -35,7 +38,7 @@ func _swap(screen: Control) -> void:
 	if _current != null:
 		_current.queue_free()
 	_current = screen
-	add_child(screen)
+	_stage.add_child(screen)
 	# 모든 버튼에 가벼운 클릭음(04 오디오 표). 게이트 칸은 확약음이 따로 있어 제외한다.
 	for node: Node in screen.find_children("*", "Button", true, false):
 		if not node is GateCell:
@@ -93,6 +96,9 @@ func _start_onboarding() -> void:
 func _duel_screen(session: DuelSession, tutorial: bool) -> DuelScreen:
 	var screen: DuelScreen = DuelScreen.new()
 	screen.setup(session, tutorial)
+	screen.segment_presented.connect(func(index: int) -> void:
+		App.analytics.log_event("segment_present", {"segment_index": index, "tutorial": tutorial})
+	)
 	screen.feedback = App.feedback
 	screen.reduce_shake = bool(App.progress.setting("reduce_shake"))
 	screen.colorblind_assist = bool(App.progress.setting("colorblind_assist"))
@@ -156,7 +162,13 @@ func _on_committed(step: Dictionary, session: DuelSession, tutorial: bool) -> vo
 		"auto": bool(step["auto"]),
 		"tutorial": tutorial,
 	})
-	if tutorial and (step["events"] as Array).has("yield_to_a"):
+	var events: Array = step["events"]
+	App.analytics.log_event("gate_reveal", {"segment_index": int(step["segment"]), "is_split": bool(step["split"])})
+	if events.has("split_even"):
+		App.analytics.log_event("gate_split", {"segment_index": int(step["segment"])})
+	elif events.has("yield_to_a") or events.has("yield_to_b"):
+		App.analytics.log_event("gate_yield", {"segment_index": int(step["segment"]), "to_me": events.has("yield_to_a")})
+	if tutorial and events.has("yield_to_a"):
 		App.analytics.log_event("onboarding_split_seen", {"segment_index": int(step["segment"])})
 
 

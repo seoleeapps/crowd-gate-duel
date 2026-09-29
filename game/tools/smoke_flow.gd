@@ -64,13 +64,6 @@ func _run() -> void:
 	_check_eq(app.remote.write_count, 1, "판당 원격 쓰기 1건")
 	_check(app.progress.pending_upload().is_empty(), "기록 업로드 완료")
 
-	var names: PackedStringArray = []
-	for event: Dictionary in app.analytics.recent:
-		names.append(str(event["name"]))
-	for expected: String in ["tutorial_begin", "onboarding_split_seen", "tutorial_complete", "home_view",
-			"duel_start_tap", "opponent_resolved", "level_start", "gate_commit", "level_end", "result_view"]:
-		_check(names.has(expected), "분석 이벤트 %s" % expected)
-
 	result.home_pressed.emit()
 	var back_home: HomeScreen = await _wait_for(HomeScreen)
 	_check(back_home != null, "결과 → 홈 복귀")
@@ -90,6 +83,14 @@ func _run() -> void:
 	settings.back_pressed.emit()
 	_check(await _wait_for(HomeScreen) != null, "설정 → 홈")
 
+	var names: PackedStringArray = []
+	for event: Dictionary in app.analytics.recent:
+		names.append(str(event["name"]))
+	for expected: String in ["tutorial_begin", "onboarding_split_seen", "tutorial_complete", "home_view",
+			"duel_start_tap", "opponent_resolved", "level_start", "segment_present", "gate_commit", "gate_reveal",
+			"gate_yield", "level_end", "result_view", "cosmetic_view", "settings_view"]:
+		_check(names.has(expected), "분석 이벤트 %s" % expected)
+
 	# 재생 객체는 오디오 스레드가 한 번 돈 뒤에 풀린다. 끄고 잠시 기다려야 종료 시 누수로 잡히지 않는다.
 	app.feedback.stop_all()
 	await create_timer(0.3, true, false, true).timeout
@@ -105,10 +106,15 @@ func _run() -> void:
 
 ## 확약을 기다렸다가 누른다. 온보딩은 안내 칸, 일반 대국은 가운데 칸을 누른다.
 func _play(screen: DuelScreen) -> void:
+	var checked_band: bool = false
 	for frame: int in range(STEP_LIMIT_FRAMES):
 		if not is_instance_valid(screen) or screen.session.is_finished():
 			return
 		if screen._waiting_commit:
+			if not checked_band:
+				# 게이트 띠는 구간이 제시된 뒤에 생기므로 확약 대기 때 한 번 더 검사한다.
+				_check_touch_targets(screen)
+				checked_band = screen.band.cells.size() > 0
 			var guided: int = Onboarding.guided_pick(screen.session.segment_index) if screen.tutorial else 1
 			screen._on_picked(maxi(guided, 0) if screen.tutorial else guided)
 		await process_frame
@@ -118,12 +124,27 @@ func _wait_for(type: Variant) -> Variant:
 	for frame: int in range(STEP_LIMIT_FRAMES):
 		var scene: Node = current_scene
 		if scene != null:
-			for child: Node in scene.get_children():
+			for child: Node in scene.find_children("*", "", true, false):
 				if is_instance_of(child, type) and not child.is_queued_for_deletion():
+					await process_frame
+					_check_touch_targets(child)
 					return child
 		await process_frame
 	_failures.append("화면 대기 시간 초과: %s" % str(type))
 	return null
+
+
+## 03 접근성: 모든 상호작용 요소 48dp 이상, 게이트 칸은 높이 96dp 이상(SRC-008).
+func _check_touch_targets(screen: Node) -> void:
+	var min_px: float = 48.0 * Palette.DP - 0.5
+	for node: Node in screen.find_children("*", "BaseButton", true, false):
+		var button: BaseButton = node as BaseButton
+		if not button.is_visible_in_tree() or button.size == Vector2.ZERO:
+			continue
+		if button.size.x < min_px or button.size.y < min_px:
+			_failures.append("터치 대상 48dp 미만: %s %s (%s)" % [screen.get_class(), button.name, str(button.size / Palette.DP)])
+		if button is GateCell and button.size.y < 96.0 * Palette.DP - 0.5:
+			_failures.append("게이트 칸 96dp 미만: %s" % str(button.size / Palette.DP))
 
 
 func _check(condition: bool, label: String) -> void:

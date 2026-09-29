@@ -146,30 +146,28 @@ func opp_anchor() -> Vector2:
 
 
 ## 증가: 무리 위로 인형이 튀어나온다. 증가량이 클수록 많이, 빠르게.
+## 입자는 무리에 붙여 무리가 새 높이로 옮겨 가도 함께 따라가게 한다.
 func burst(mine: bool, amount: int) -> void:
-	var at: Vector2 = me_anchor() if mine else opp_anchor()
 	var particles: CPUParticles2D = _doll_particles(mine, clampi(amount, 6, 48))
-	particles.position = at + Vector2(0, -20 * Palette.DP)
+	particles.position = Vector2(0, -20 * Palette.DP)
 	particles.direction = Vector2.UP
 	particles.spread = 55.0
 	particles.initial_velocity_min = 120.0 * Palette.DP
 	particles.initial_velocity_max = (160.0 + float(mini(amount, 200))) * Palette.DP
 	particles.gravity = Vector2(0, 520 * Palette.DP)
-	_fire(particles)
+	_fire(particles, me_view if mine else opp_view)
 
 
 ## 감소: 개체가 흐려지며 아래로 가라앉는다.
 func sink(mine: bool, amount: int) -> void:
-	var at: Vector2 = me_anchor() if mine else opp_anchor()
 	var particles: CPUParticles2D = _doll_particles(mine, clampi(amount, 4, 30))
-	particles.position = at
 	particles.direction = Vector2.DOWN
 	particles.spread = 30.0
 	particles.initial_velocity_min = 20.0 * Palette.DP
 	particles.initial_velocity_max = 60.0 * Palette.DP
 	particles.gravity = Vector2(0, 60 * Palette.DP)
 	particles.color = _body(mine).lerp(Palette.BG, 0.4)
-	_fire(particles)
+	_fire(particles, me_view if mine else opp_view)
 
 
 ## 빼앗김: 빼앗긴 쪽의 인형이 궤적을 그리며 가져간 쪽으로 끌려간다. 방향이 궤적으로 보인다.
@@ -408,8 +406,9 @@ func _doll_particles(mine: bool, amount: int) -> CPUParticles2D:
 	return particles
 
 
-func _fire(particles: CPUParticles2D) -> void:
-	_fx.add_child(particles)
+func _fire(particles: CPUParticles2D, crowd: CrowdView) -> void:
+	particles.local_coords = true
+	crowd.add_child(particles)
 	particles.emitting = true
 	particles.finished.connect(particles.queue_free)
 
