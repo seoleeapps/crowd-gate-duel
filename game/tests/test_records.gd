@@ -179,3 +179,10 @@ static func _test_slow_fetch_goes_bot_then_reuses(t: TestBase) -> void:
 	t.check_eq(port.read_count, 1, "늦게 온 기록이 있으면 다음 판에 다시 읽지 않는다")
 	var second: Dictionary = resolver.take_setup(3, "slow-fallback-2")
 	t.check(not (second["opponent"] as Opponent).is_bot(), "다음 판은 늦게 온 기록 상대")
+
+	# 늦게 온 기록을 기다리는 사이 대역이 올랐으면 그 기록을 쓰지 않는다.
+	resolver.prefetch(3)
+	port.deliver()
+	var promoted: Dictionary = resolver.take_setup(4, "slow-promoted")
+	t.check((promoted["opponent"] as Opponent).is_bot(), "대역이 달라진 기록은 쓰지 않는다")
+	t.check_eq((promoted["course"] as Course).band, 4, "지금 대역의 코스로 시작")

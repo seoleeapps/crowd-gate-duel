@@ -39,9 +39,11 @@ func has_record() -> bool:
 ## fallback_seed 는 봇 대국 코스의 시드다. 호출자가 대역과 시각 등으로 만든다.
 ## 반환: { "course": Course, "opponent": Opponent }
 func take_setup(band: int, fallback_seed: String) -> Dictionary:
-	if _ready_record != null:
-		var record: ReplayRecord = _ready_record
-		_ready_record = null
+	var record: ReplayRecord = _ready_record
+	_ready_record = null
+	# 늦게 온 기록은 받을 때와 대역이 달라졌을 수 있다(그 사이 승리로 대역 해금).
+	# 다른 대역의 기록은 코스 구간 수와 확약 시간이 달라 쓰지 않는다.
+	if record != null and record.band == band:
 		return {"course": record.build_course(), "opponent": Opponent.from_record(record)}
 
 	var report: Dictionary = CourseValidator.generate_valid(fallback_seed, band)

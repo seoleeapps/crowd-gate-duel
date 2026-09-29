@@ -102,3 +102,12 @@ static func _test_snapshot_restore(t: TestBase) -> void:
 	var broken: Dictionary = session.to_dict()
 	broken["version"] = 99
 	t.check(DuelSession.from_dict(broken) == null, "모르는 스냅샷 버전은 복원하지 않는다")
+
+	# 기록 상대의 규칙 버전이 오르면 복원할 수 없다. 봇으로 바꿔 복원하지 않고 판을 버린다.
+	var record: ReplayRecord = ReplayRecord.make("rec", 4, session.course.seed_text, [0, 1, 2, 0, 1, 2, 0, 1], 0)
+	var with_record: DuelSession = DuelSession.new(session.course, Opponent.from_record(record), 2800)
+	with_record.present_next()
+	with_record.commit(1)
+	var stale: Dictionary = with_record.to_dict()
+	stale["opponent"]["record"]["schemaVersion"] = ReplayRecord.SCHEMA_VERSION + 1
+	t.check(DuelSession.from_dict(stale) == null, "기록 상대를 복원할 수 없으면 판을 버린다")

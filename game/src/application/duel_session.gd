@@ -122,10 +122,11 @@ func to_dict() -> Dictionary:
 static func from_dict(data: Dictionary) -> DuelSession:
 	if int(data.get("version", 0)) != SNAPSHOT_VERSION:
 		return null
+	var opponent: Opponent = Opponent.from_dict(data["opponent"])
+	if opponent == null:
+		return null
 	var session: DuelSession = DuelSession.new(
-		Course.from_dict(data["course"]),
-		Opponent.from_dict(data["opponent"]),
-		int(data["commit_ms"])
+		Course.from_dict(data["course"]), opponent, int(data["commit_ms"])
 	)
 	var saved_picks: Array = data["picks_me"]
 	if saved_picks.size() > session.course.segment_count():

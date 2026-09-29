@@ -60,9 +60,13 @@ func to_dict() -> Dictionary:
 	return {"kind": "record", "record": record.to_dict()}
 
 
+## 복원할 수 없으면 null. 기록 상대를 봇으로 바꿔 복원하면 이미 본 판의 궤적이 달라지므로
+## 대체하지 않는다. 호출자는 그 판을 버린다.
 static func from_dict(data: Dictionary) -> Opponent:
-	if str(data.get("kind", "")) == "record":
-		var restored: ReplayRecord = ReplayRecord.from_dict(data.get("record", {}))
-		if restored != null:
-			return Opponent.from_record(restored)
-	return Opponent.bot(int(data.get("band", 1)))
+	match str(data.get("kind", "")):
+		"record":
+			var restored: ReplayRecord = ReplayRecord.from_dict(data.get("record", {}))
+			return Opponent.from_record(restored) if restored != null else null
+		"bot":
+			return Opponent.bot(int(data.get("band", 1)))
+	return null
