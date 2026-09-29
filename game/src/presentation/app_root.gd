@@ -164,8 +164,11 @@ func _on_committed(step: Dictionary, session: DuelSession, tutorial: bool) -> vo
 	})
 	var events: Array = step["events"]
 	App.analytics.log_event("gate_reveal", {"segment_index": int(step["segment"]), "is_split": bool(step["split"])})
-	if events.has("split_even"):
-		App.analytics.log_event("gate_split", {"segment_index": int(step["segment"])})
+	# 겹침 발생률(DEC-014)을 gate_split + gate_yield 로 셀 수 있게 방패끼리 겹친 경우도 남긴다.
+	if events.has("split_even") or events.has("shield_idle"):
+		App.analytics.log_event("gate_split", {
+			"segment_index": int(step["segment"]), "shield_idle": events.has("shield_idle"),
+		})
 	elif events.has("yield_to_a") or events.has("yield_to_b"):
 		App.analytics.log_event("gate_yield", {"segment_index": int(step["segment"]), "to_me": events.has("yield_to_a")})
 	if tutorial and events.has("yield_to_a"):

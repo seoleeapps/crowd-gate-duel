@@ -408,6 +408,8 @@ func _doll_particles(mine: bool, amount: int) -> CPUParticles2D:
 
 func _fire(particles: CPUParticles2D, crowd: CrowdView) -> void:
 	particles.local_coords = true
+	# 무리에 붙여도 다른 무리보다 위에 그려야 앞 무리에 가려지지 않는다.
+	particles.z_index = 10
 	crowd.add_child(particles)
 	particles.emitting = true
 	particles.finished.connect(particles.queue_free)
