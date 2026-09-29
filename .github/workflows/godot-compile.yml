@@ -150,3 +150,22 @@ jobs:
             echo "Godot reported errors during tests." >&2
             exit 1
           fi
+
+          # 앱 흐름 스모크: 온보딩 → 결과 → 홈 → 대국 → 결과. 사용자 저장과 분리된 경로를 쓴다.
+          smoke_log="${RUNNER_TEMP}/godot-smoke.log"
+          timeout --kill-after=10s "${GODOT_COMMAND_TIMEOUT_SECONDS:-600}s" \
+            godot --headless --path "$PROJECT_DIR" --script res://tools/smoke_flow.gd \
+            -- --progress-path user://smoke/progress.json 2>&1 | tee "${smoke_log}"
+          smoke_status="${PIPESTATUS[0]}"
+          if [ "${smoke_status}" -ne 0 ]; then
+            echo "Smoke flow exited with ${smoke_status}." >&2
+            exit "${smoke_status}"
+          fi
+          if ! grep -q "\[smoke\] ALL GREEN" "${smoke_log}"; then
+            echo "Smoke flow did not report ALL GREEN." >&2
+            exit 1
+          fi
+          if grep -E "^(SCRIPT ERROR|ERROR):" "${smoke_log}"; then
+            echo "Godot reported errors during the smoke flow." >&2
+            exit 1
+          fi

@@ -1,0 +1,115 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: ko\n"
+
+msgid "APP_NAME"
+msgstr "갈림길 군중 대전"
+
+msgid "PLAY"
+msgstr "시작"
+
+msgid "BAND_1"
+msgstr "입문"
+
+msgid "BAND_2"
+msgstr "기본"
+
+msgid "BAND_3"
+msgstr "숙련"
+
+msgid "BAND_4"
+msgstr "상위"
+
+msgid "BAND_5"
+msgstr "최상"
+
+msgid "BAND_LABEL"
+msgstr "대역 %d · %s"
+
+msgid "CHIP_ME"
+msgstr "나"
+
+msgid "CHIP_OPP"
+msgstr "상대"
+
+msgid "CHIP_BOT"
+msgstr "봇"
+
+msgid "CHIP_PRACTICE"
+msgstr "연습"
+
+msgid "TIE"
+msgstr "동수"
+
+msgid "RESULT_WIN"
+msgstr "승리"
+
+msgid "RESULT_LOSS"
+msgstr "패배"
+
+msgid "RESULT_DRAW"
+msgstr "무승부"
+
+msgid "REMATCH"
+msgstr "한 판 더"
+
+msgid "SHARE"
+msgstr "공유"
+
+msgid "HOME"
+msgstr "홈"
+
+msgid "SHARE_SAVED"
+msgstr "결과 카드를 저장했어요"
+
+msgid "SHARE_FAILED"
+msgstr "카드를 저장하지 못했어요"
+
+msgid "AD_RETRY"
+msgstr "광고 보고 다시 도전"
+
+msgid "AD_RETRY_NOTICE"
+msgstr "광고를 끝까지 보면 같은 코스로 한 번 더 도전할 수 있어요. 건너뛰면 재도전은 없어요."
+
+msgid "AD_RETRY_LEFT"
+msgstr "오늘 %d번 남음"
+
+msgid "DECISIVE"
+msgstr "결정적 구간 · %d구간"
+
+msgid "FEATHERS_GAINED"
+msgstr "깃털 +%d"
+
+msgid "DAILY_FIRST_WIN"
+msgstr "오늘 첫 승"
+
+msgid "BAND_UP"
+msgstr "대역 %d 해금"
+
+msgid "OFFLINE"
+msgstr "오프라인 · 봇과 대국합니다"
+
+msgid "PAUSED"
+msgstr "일시정지"
+
+msgid "RESUME"
+msgstr "계속"
+
+msgid "A11Y_PAUSE"
+msgstr "일시정지"
+
+msgid "A11Y_GATE_MUL"
+msgstr "불리기, %s배"
+
+msgid "A11Y_GATE_ADD"
+msgstr "모으기, %d명 더하기"
+
+msgid "A11Y_GATE_STEAL"
+msgstr "빼앗기, 상대의 %d퍼센트"
+
+msgid "A11Y_GATE_SHIELD"
+msgstr "방패, 막으면 %d퍼센트 반격"
+
+msgid "A11Y_START"
+msgstr "대국 시작"

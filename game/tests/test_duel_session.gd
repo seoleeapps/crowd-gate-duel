@@ -11,6 +11,8 @@ static func run() -> TestBase:
 	_test_timeout_auto_picks_leftmost(t)
 	_test_pause_keeps_remaining(t)
 	_test_snapshot_restore(t)
+	_test_decisive_segment(t)
+	_test_onboarding_script(t)
 	return t
 
 
@@ -111,3 +113,51 @@ static func _test_snapshot_restore(t: TestBase) -> void:
 	var stale: Dictionary = with_record.to_dict()
 	stale["opponent"]["record"]["schemaVersion"] = ReplayRecord.SCHEMA_VERSION + 1
 	t.check(DuelSession.from_dict(stale) == null, "기록 상대를 복원할 수 없으면 판을 버린다")
+
+
+static func _test_decisive_segment(t: TestBase) -> void:
+	var session: DuelSession = _bot_session("decisive", 2)
+	t.check_eq(session.decisive_segment(), -1, "구간 전에는 결정적 구간이 없다")
+	_play_through(session, [0, 1, 2])
+	var best: int = session.decisive_segment()
+	var best_swing: int = 0
+	var max_swing: int = 0
+	for entry: Dictionary in session.trace:
+		var swing: int = absi((int(entry["me"]) - int(entry["opp"])) - (int(entry["before_me"]) - int(entry["before_opp"])))
+		max_swing = maxi(max_swing, swing)
+		if int(entry["segment"]) == best:
+			best_swing = swing
+	t.check_eq(best_swing, max_swing, "결정적 구간은 격차가 가장 크게 움직인 구간")
+
+
+static func _test_onboarding_script(t: TestBase) -> void:
+	# AC-001: 안내를 따르면 1구간 뒤 내가 뒤처지고, 2구간에서 같은 칸을 골라 내가 온전히 가져간다.
+	var session: DuelSession = Onboarding.session()
+	session.present_next()
+	var first: Dictionary = session.commit(Onboarding.guided_pick(0))
+	t.check(int(first["me"]) < int(first["opp"]), "1구간 뒤 내가 뒤처진다")
+	session.present_next()
+	var second: Dictionary = session.commit(Onboarding.guided_pick(1))
+	t.check(bool(second["split"]), "2구간은 반드시 같은 칸")
+	t.check((second["events"] as Array).has("yield_to_a"), "뒤처진 내가 먼저 지나간다")
+	t.check_eq(int(second["opp"]), int(second["before_opp"]), "앞선 상대는 아무것도 얻지 못한다")
+
+	# 3구간: 상대가 노리는 칸을 같이 고르면 역전당하고, 다른 칸을 고르면 이긴다.
+	for pick: int in range(3):
+		var run: DuelSession = Onboarding.session()
+		run.present_next()
+		run.commit(0)
+		run.present_next()
+		run.commit(0)
+		run.present_next()
+		run.commit(pick)
+		var expect_win: bool = pick != Onboarding.OPPONENT_PICKS[2]
+		t.check_eq(run.result() == DuelEngine.RESULT_A_WIN, expect_win, "3구간 %d번 칸 선택의 승패" % pick)
+
+	# 시간이 다 돼도 가장 왼쪽(안내 칸)이 골라져 같은 사건이 일어난다.
+	var idle: DuelSession = Onboarding.session()
+	idle.present_next()
+	idle.tick(Onboarding.COMMIT_MS)
+	idle.present_next()
+	var idle_second: Dictionary = idle.tick(Onboarding.COMMIT_MS)
+	t.check((idle_second["events"] as Array).has("yield_to_a"), "아무것도 누르지 않아도 양보 사건이 일어난다")
