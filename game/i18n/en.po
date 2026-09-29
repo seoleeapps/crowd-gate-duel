@@ -1,0 +1,115 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+
+msgid "APP_NAME"
+msgstr "Crowd Gate Duel"
+
+msgid "PLAY"
+msgstr "Play"
+
+msgid "BAND_1"
+msgstr "Rookie"
+
+msgid "BAND_2"
+msgstr "Basic"
+
+msgid "BAND_3"
+msgstr "Skilled"
+
+msgid "BAND_4"
+msgstr "Advanced"
+
+msgid "BAND_5"
+msgstr "Master"
+
+msgid "BAND_LABEL"
+msgstr "Band %d · %s"
+
+msgid "CHIP_ME"
+msgstr "Me"
+
+msgid "CHIP_OPP"
+msgstr "Rival"
+
+msgid "CHIP_BOT"
+msgstr "Bot"
+
+msgid "CHIP_PRACTICE"
+msgstr "Practice"
+
+msgid "TIE"
+msgstr "Tie"
+
+msgid "RESULT_WIN"
+msgstr "Win"
+
+msgid "RESULT_LOSS"
+msgstr "Lose"
+
+msgid "RESULT_DRAW"
+msgstr "Draw"
+
+msgid "REMATCH"
+msgstr "Play again"
+
+msgid "SHARE"
+msgstr "Share"
+
+msgid "HOME"
+msgstr "Home"
+
+msgid "SHARE_SAVED"
+msgstr "Result card saved"
+
+msgid "SHARE_FAILED"
+msgstr "Could not save the card"
+
+msgid "AD_RETRY"
+msgstr "Watch an ad to retry"
+
+msgid "AD_RETRY_NOTICE"
+msgstr "Watch the whole ad to replay this same course once. Skip it and there is no retry."
+
+msgid "AD_RETRY_LEFT"
+msgstr "%d left today"
+
+msgid "DECISIVE"
+msgstr "Turning point · segment %d"
+
+msgid "FEATHERS_GAINED"
+msgstr "+%d feathers"
+
+msgid "DAILY_FIRST_WIN"
+msgstr "First win today"
+
+msgid "BAND_UP"
+msgstr "Band %d unlocked"
+
+msgid "OFFLINE"
+msgstr "Offline · you will face a bot"
+
+msgid "PAUSED"
+msgstr "Paused"
+
+msgid "RESUME"
+msgstr "Resume"
+
+msgid "A11Y_PAUSE"
+msgstr "Pause"
+
+msgid "A11Y_GATE_MUL"
+msgstr "Multiply, times %s"
+
+msgid "A11Y_GATE_ADD"
+msgstr "Gather, add %d"
+
+msgid "A11Y_GATE_STEAL"
+msgstr "Steal %d percent of the rival"
+
+msgid "A11Y_GATE_SHIELD"
+msgstr "Shield, counter %d percent"
+
+msgid "A11Y_START"
+msgstr "Start a duel"
