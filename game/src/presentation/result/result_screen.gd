@@ -240,6 +240,12 @@ func _buttons() -> Control:
 	return column
 
 
+## 광고를 보는 동안 모든 버튼을 막는다. 연타와 광고 중 이탈을 함께 막는다.
+func set_busy(busy: bool) -> void:
+	for node: Node in find_children("*", "Button", true, false):
+		(node as Button).disabled = busy
+
+
 func show_toast(message: String) -> void:
 	toast.text = message
 

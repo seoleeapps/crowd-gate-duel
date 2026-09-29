@@ -7,16 +7,19 @@ extends Control
 ## 화면은 입력과 연출만 맡고, 판 결과 반영·기록 업로드·진행 저장·분석 이벤트는 여기서 처리한다.
 
 var _current: Control
+## 보상형 광고를 보는 중이면 true. 연타로 재도전이 두 번 걸리지 않게 막는다.
+var _ad_in_flight: bool = false
 
 
 func _ready() -> void:
 	theme = UiTheme.build()
-	var saved: DuelSession = DuelSession.from_dict(App.progress.in_progress())
+	var in_progress: Dictionary = App.progress.in_progress()
+	var saved: DuelSession = DuelSession.from_dict(in_progress.get("session", {}))
 	if not App.progress.onboarding_done():
 		_start_onboarding()
 	elif saved != null:
-		# 진행 중이던 판은 남은 확약 시간부터 이어서 한다.
-		_start_duel(saved)
+		# 진행 중이던 판은 남은 확약 시간부터 이어서 한다. 재도전 판이면 재도전 제한도 이어 간다.
+		_start_duel(saved, bool(in_progress.get("ad_allowed", true)))
 	else:
 		_show_home()
 
@@ -56,7 +59,7 @@ func _start_duel(session: DuelSession, ad_allowed: bool = true) -> void:
 	var screen: DuelScreen = DuelScreen.new()
 	screen.setup(session)
 	screen.committed.connect(_on_committed.bind(session, false))
-	screen.segment_resolved.connect(_save_in_progress.bind(session))
+	screen.segment_resolved.connect(_save_in_progress.bind(session, ad_allowed))
 	screen.finished.connect(_on_duel_finished.bind(session, ad_allowed))
 	_swap(screen)
 	App.analytics.log_event("level_start", {"band": session.course.band, "segment_count": session.course.segment_count()})
@@ -86,8 +89,8 @@ func _on_committed(step: Dictionary, session: DuelSession, tutorial: bool) -> vo
 		App.analytics.log_event("onboarding_split_seen", {"segment_index": int(step["segment"])})
 
 
-func _save_in_progress(session: DuelSession) -> void:
-	App.progress.set_in_progress(session.to_dict())
+func _save_in_progress(session: DuelSession, ad_allowed: bool) -> void:
+	App.progress.set_in_progress({"session": session.to_dict(), "ad_allowed": ad_allowed})
 	App.progress.write()
 
 
@@ -131,9 +134,11 @@ func _on_rematch() -> void:
 
 func _on_share(result: ResultScreen, session: DuelSession, scene: Image) -> void:
 	App.analytics.log_event("result_share_tap", {"result": session.result()})
+	# 카드를 그리는 사이 결과 화면이 닫힐 수 있으므로 필요한 값은 먼저 꺼내 둔다.
+	var color: Color = result.result_color()
 	var saved: int = 0
 	for card_size: Vector2i in [ShareCard.SQUARE, ShareCard.VERTICAL]:
-		var image: Image = await ShareCard.render(self, card_size, scene, session.crowd_me, session.crowd_opp, result.result_color())
+		var image: Image = await ShareCard.render(self, card_size, scene, session.crowd_me, session.crowd_opp, color)
 		var name: String = "result-%d-%dx%d" % [App.now_unix(), card_size.x, card_size.y]
 		if not App.share.share_image(image, name).is_empty():
 			saved += 1
@@ -143,10 +148,20 @@ func _on_share(result: ResultScreen, session: DuelSession, scene: Image) -> void
 
 ## 보상형 광고 재도전: 옵트인 → 광고 → 끝까지 봤을 때만 같은 코스·같은 상대로 1회 재도전.
 func _on_ad_retry(session: DuelSession) -> void:
+	if _ad_in_flight:
+		return
+	_ad_in_flight = true
+	var result: Control = _current
+	if result is ResultScreen:
+		(result as ResultScreen).set_busy(true)
 	App.analytics.log_event("rewarded_retry_optin", {"placement": "result_retry"})
 	App.ads.show()
 	var rewarded: bool = await App.ads.finished
-	if not rewarded:
+	_ad_in_flight = false
+	if is_instance_valid(result) and result is ResultScreen:
+		(result as ResultScreen).set_busy(false)
+	# 광고를 끝까지 보지 않았거나, 기다리는 사이 다른 화면으로 떠났으면 재도전하지 않는다.
+	if not rewarded or _current != result:
 		return
 	App.analytics.log_event("ad_reward_earned", {"placement": "result_retry"})
 	App.progress.use_ad_retry(App.today())
