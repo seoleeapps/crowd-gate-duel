@@ -42,6 +42,7 @@ func _fetch(band: int, commit_extended: bool) -> void:
 func _clear() -> void:
 	if online:
 		my_document = {}
+	clear_finished.emit(online)
 
 
 func _upload(data: Dictionary) -> void:

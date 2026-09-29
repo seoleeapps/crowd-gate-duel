@@ -10,6 +10,7 @@ extends RefCounted
 
 signal fetch_finished(data: Dictionary)
 signal upload_finished(ok: bool)
+signal clear_finished(ok: bool)
 
 var read_count: int = 0
 var write_count: int = 0
@@ -42,7 +43,7 @@ func _fetch(_band: int, _commit_extended: bool) -> void:
 
 
 func _clear() -> void:
-	pass
+	clear_finished.emit(false)
 
 
 func _upload(_data: Dictionary) -> void:

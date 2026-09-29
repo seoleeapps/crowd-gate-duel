@@ -52,6 +52,7 @@ static func defaults() -> Dictionary:
 		"settings": default_settings(),
 		"in_progress": {},
 		"pending_upload": {},
+		"pending_clear": false,
 	}
 
 
@@ -246,3 +247,12 @@ func set_pending_upload(record: Dictionary) -> void:
 
 func pending_upload() -> Dictionary:
 	return data["pending_upload"]
+
+
+## 원격 기록 문서를 지워야 하는데 아직 못 지웠으면 true. 연결될 때까지 남는다.
+func set_pending_clear(value: bool) -> void:
+	data["pending_clear"] = value
+
+
+func pending_clear() -> bool:
+	return bool(data["pending_clear"])

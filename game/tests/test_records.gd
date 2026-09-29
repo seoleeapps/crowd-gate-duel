@@ -15,6 +15,7 @@ static func run() -> TestBase:
 	_test_offline_bot_and_reconnect_upload(t)
 	_test_slow_fetch_goes_bot_then_reuses(t)
 	_test_commit_extended_matching(t)
+	_test_offline_reset_clears_later(t)
 	AtomicFileStore.remove(STORE_PATH)
 	return t
 
@@ -210,3 +211,27 @@ static func _test_commit_extended_matching(t: TestBase) -> void:
 	port.my_document = {"picks": [0]}
 	port.request_clear()
 	t.check(port.my_document.is_empty(), "진행 초기화는 내 원격 문서를 비운다")
+
+
+static func _test_offline_reset_clears_later(t: TestBase) -> void:
+	# 02 리셋 계약: 오프라인에서 초기화해도 원격 문서는 연결될 때 지워진다. 앱을 다시 켜도 잊지 않는다.
+	AtomicFileStore.remove(STORE_PATH)
+	var port: LocalRemoteRecordPort = LocalRemoteRecordPort.new()
+	port.my_document = {"picks": [1, 2, 0]}
+	port.online = false
+	var store: ProgressStore = ProgressStore.new(STORE_PATH)
+	var sync: RecordSync = RecordSync.new(port, store)
+	store.set_pending_upload({"picks": [0]})
+	store.reset_progress()
+	sync.clear_remote()
+	t.check(not port.my_document.is_empty(), "오프라인이면 아직 지우지 못한다")
+	t.check(store.pending_upload().is_empty(), "초기화하면 올릴 기록도 버린다")
+
+	var reopened: ProgressStore = ProgressStore.new(STORE_PATH)
+	reopened.read()
+	t.check(reopened.pending_clear(), "지우기 대기가 디스크에 남는다")
+	var sync_after: RecordSync = RecordSync.new(port, reopened)
+	port.online = true
+	sync_after.flush()
+	t.check(port.my_document.is_empty(), "연결되면 원격 문서를 지운다")
+	t.check(not reopened.pending_clear(), "지운 뒤 대기 표시를 내린다")

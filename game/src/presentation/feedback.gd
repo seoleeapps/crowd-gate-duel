@@ -101,7 +101,6 @@ func play_music(stream: AudioStream) -> void:
 	_music.volume_db = MUSIC_FADE_FROM_DB
 	_music.play()
 	create_tween().tween_property(_music, "volume_db", 0.0, MUSIC_FADE_SECONDS)
-	set_intensity(1.0)
 
 
 func stop_music() -> void:

@@ -125,6 +125,9 @@ func _safe_top() -> float:
 
 
 func _run() -> void:
+	# 대국 곡은 판 초반에 먹먹하게 시작한다. 구간마다 진행도만큼 밝아진다.
+	if feedback != null:
+		feedback.set_intensity(_progress())
 	world.set_standing(session.crowd_me, session.crowd_opp, _progress(), false)
 	ribbon.set_progress(maxi(session.segment_index + 1, 1), session.course.segment_count())
 	timer.set_time(session.commit_ms, session.commit_ms)

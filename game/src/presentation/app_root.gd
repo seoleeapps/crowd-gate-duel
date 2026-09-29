@@ -51,6 +51,7 @@ func _show_home() -> void:
 	home.profile_pressed.connect(_show_profile)
 	home.settings_pressed.connect(_show_settings)
 	_swap(home)
+	App.feedback.set_intensity(1.0)
 	App.feedback.play_music(MUSIC_HOME)
 	# 다음 판 상대 기록을 미리 1건 받아 둔다. 도착하지 않아도 시작을 막지 않는다.
 	App.resolver.prefetch(App.progress.band(), App.commit_extended())
@@ -141,8 +142,7 @@ func _on_setting_changed(key: String) -> void:
 ## 진행 초기화: 로컬 진행과 원격 기록 문서를 함께 비우고 온보딩부터 다시 시작한다(02 리셋 계약).
 func _on_reset() -> void:
 	App.progress.reset_progress()
-	App.progress.write()
-	App.remote.request_clear()
+	App.record_sync.clear_remote()
 	_start_onboarding()
 
 
