@@ -81,6 +81,10 @@ replays/{userId}
 | 원격 읽기 지연 | 실패해도 판 시작을 막지 않음 | 500ms 초과 시 봇으로 전환 |
 | 패키지 크기 | 80MB 이하 | 빌드 산출물 |
 
+측정(2026-09-29, `game/tools/perf_probe.gd`, 개발 기기 Apple M3 · Compatibility 렌더러, 실기기 아님):
+두 무리 12:12 대비 500:480 에서 늘어나는 드로우콜 5(예산 10), 판정 1구간 평균 2.2µs(예산 1ms),
+코스 생성+검증 평균 12.7ms(예산 50ms, `validate_courses.sh`). 저사양 실기기 프레임은 아직 재지 못했다.
+
 원격 읽기가 느리면 기다리지 않고 봇으로 전환한다. 대전 게임에서 대기 화면은 이탈 지점이기
 때문이며, 이 정책이 성능 예산의 일부다.
 
@@ -147,7 +151,9 @@ A-1 스타일 확정(`04` 승인 게이트)은 3주차 시작 전에 통과해�
 | 생성기 대량 검증 | `scripts/validate_courses.sh --seeds 10000` — AC-002 | 구현됨 |
 | 전략 승률 행렬 | `scripts/strategy_matrix.sh --courses 40` — AC-004 참고 지표 | 구현됨 |
 | 정적 검사 | `scripts/lint.sh` — 임포트와 스크립트 컴파일. CI 게이트와 같은 범위 | 구현됨 |
-| 디버그 빌드 | `scripts/build.sh --debug` — application ID 는 `com.seorilabs.crowdgateduel.debug` | 화면 구현 후 |
+| 디버그 빌드 | `scripts/build.sh --debug` — application ID 는 `com.seorilabs.crowdgateduel.debug`. 편집기 디버그 키스토어로 서명한 arm64 APK, 패키지 크기 예산(80MB) 검사 포함 | 구현됨 (39MB) |
+| 앱 흐름 스모크 | `scripts/smoke.sh` — 첫 세션 전체와 꾸미기·설정, 터치 대상 48dp 검사 | 구현됨 |
+| 성능 측정 | `godot --path game --script res://tools/perf_probe.gd` — 창을 띄워 실제 렌더러로 잰다 | 구현됨 |
 
 리플레이 재현은 별도 스크립트를 두지 않고 `test.sh` 안의 결정론 스위트가 담당한다.
 같은 판정 코드가 대국과 재생 양쪽을 처리하므로 검증 경로를 나눌 이유가 없다.

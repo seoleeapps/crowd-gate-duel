@@ -11,6 +11,7 @@ config/description="동시 비공개 게이트 선택으로 겨루는 비동기 
 config/version="0.1.0"
 run/main_scene="res://src/presentation/app_root.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://assets/art/icon.svg"
 
 [autoload]
 

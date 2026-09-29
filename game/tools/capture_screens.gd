@@ -210,19 +210,26 @@ func _capture_settings() -> void:
 
 
 func _show(screen: Control) -> void:
+	# 캡처 창은 포커스를 잃기 쉽다. 대국 화면이 이를 백그라운드로 보고 멈추지 않게 한다.
+	if screen is DuelScreen:
+		(screen as DuelScreen).pause_when_backgrounded = false
 	for child: Node in _viewport.get_children():
 		child.queue_free()
+	# 실제 앱과 같은 무대에 올린다. 넓은 화면에서는 폭이 9:16 으로 제한된다.
 	var holder: Control = Control.new()
 	holder.theme = UiTheme.build()
 	holder.size = Vector2(_size)
 	_viewport.add_child(holder)
-	screen.size = Vector2(_size)
-	holder.add_child(screen)
+	var stage: Stage = Stage.new()
+	holder.add_child(stage)
+	stage.add_child(screen)
 	await process_frame
 
 
 func _save(name: String) -> void:
 	await RenderingServer.frame_post_draw
+	if paused:
+		push_error("[capture] %s 가 일시정지 상태로 찍힘" % name)
 	var path: String = "%s/%s.png" % [_out, name]
 	_viewport.get_texture().get_image().save_png(path)
 	print("[capture] %s" % path)

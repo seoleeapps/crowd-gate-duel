@@ -132,6 +132,15 @@ scripts/smoke.sh
 # 효과음 절차 생성 (결정론, 외부 음원 없음)
 python3 scripts/make_sfx.py
 
+# 디버그 APK (편집기 디버그 키스토어 서명, build/android/)
+scripts/build.sh --debug
+
+# 성능 예산 측정 (창을 띄워 실제 렌더러로 잰다)
+godot --path game --resolution 540x1170 --script res://tools/perf_probe.gd
+
+# 색각 시뮬레이션 (공용 Playwright 가상환경의 PIL·numpy 사용)
+~/.local/share/seorilabs/playwright/venv/bin/python scripts/colorblind_sim.py <캡처.png> <출력.png>
+
 # 실행 화면 캡처 (창을 띄워 실제 렌더러로 그린다)
 godot --path game --resolution 540x1170 --script res://tools/capture_screens.gd -- --out docs/game-design/ui/runtime/1080x2340-ko
 ```

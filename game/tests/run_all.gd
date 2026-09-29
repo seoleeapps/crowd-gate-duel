@@ -15,6 +15,7 @@ func _initialize() -> void:
 	suites.append(TestDuelSession.run())
 	suites.append(TestRecords.run())
 	suites.append(TestProgressStore.run())
+	suites.append(TestContrast.run())
 
 	var total_passed: int = 0
 	var total_failed: int = 0

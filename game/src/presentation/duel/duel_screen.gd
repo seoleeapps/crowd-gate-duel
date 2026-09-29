@@ -8,6 +8,7 @@ extends Control
 ## 구역(시안 기준 780dp 높이): 진행 리본 9% · 언덕길 63% · 게이트 띠 21% · 확약 타이머 7%.
 ## 리본은 언덕길 위에 겹쳐 놓고, 긴 화면에서는 언덕길만 늘어나며 게이트 띠 높이는 고정이다.
 
+signal segment_presented(index: int)
 signal committed(step: Dictionary)
 signal segment_resolved
 signal finished(scene: Image)
@@ -26,6 +27,8 @@ var reduce_shake: bool = false
 var colorblind_assist: bool = false
 var my_color: Color = Palette.MINE
 var my_flag: String = "chevron"
+## 앱이 백그라운드로 가거나 창이 포커스를 잃으면 일시정지한다. 화면 캡처 도구만 끈다.
+var pause_when_backgrounded: bool = true
 
 var world: WorldView
 var band: GateBand
@@ -72,7 +75,7 @@ func _ready() -> void:
 func _notification(what: int) -> void:
 	# 앱이 백그라운드로 가면 확약 대기를 멈추고, 돌아오면 남은 시간부터 재개한다(02 상태 머신).
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED:
-		if is_node_ready() and session != null and not session.is_finished():
+		if pause_when_backgrounded and is_node_ready() and session != null and not session.is_finished():
 			_open_pause()
 
 
@@ -141,6 +144,7 @@ func _run() -> void:
 			feedback.set_intensity(_progress())
 		world.opp_chip.set_locked(true)
 		var guided: int = Onboarding.guided_pick(session.segment_index) if tutorial else -1
+		segment_presented.emit(session.segment_index)
 		await band.present(session.current_gates(), guided).finished
 		_ms_carry = 0.0
 		_waiting_commit = true
