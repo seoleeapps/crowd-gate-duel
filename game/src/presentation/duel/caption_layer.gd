@@ -17,6 +17,8 @@ var _icon: TextureRect
 var _text: Label
 var _hint: Label
 var _waiting: bool = false
+## 자막을 띄울 때마다 오른다. 앞 자막의 4초 타이머가 뒤 자막을 닫지 않게 번호로 가린다.
+var _serial: int = 0
 
 
 func _ready() -> void:
@@ -73,9 +75,15 @@ func show_caption(key: String, icon: String, wait: bool) -> void:
 	create_tween().tween_property(_card, "modulate:a", 1.0, 0.18)
 	if not wait:
 		return
+	_serial += 1
+	var serial: int = _serial
 	_waiting = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	get_tree().create_timer(FOCUS_WAIT_SECONDS).timeout.connect(_continue)
+	# 일시정지 중에는 멈추는 타이머라, 앱이 백그라운드에 있는 동안 자막이 저절로 닫히지 않는다.
+	get_tree().create_timer(FOCUS_WAIT_SECONDS, false).timeout.connect(func() -> void:
+		if serial == _serial:
+			_continue()
+	)
 	await continued
 
 
@@ -97,7 +105,7 @@ func _continue() -> void:
 	continued.emit()
 
 
-## 리본 아래, 화면 가운데에 둔다.
+## 이 층은 리본 아래에서 시작한다(일시정지 버튼을 덮지 않는다). 카드는 층 맨 위 가운데에 둔다.
 func _place() -> void:
 	_card.reset_size()
-	_card.position = Vector2((size.x - _card.size.x) / 2.0, (DuelScreen.RIBBON_DP + 12.0) * Palette.DP)
+	_card.position = Vector2((size.x - _card.size.x) / 2.0, 12.0 * Palette.DP)

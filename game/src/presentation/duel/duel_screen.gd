@@ -121,7 +121,9 @@ func _layout() -> void:
 	timer.size = Vector2(size.x, timer_h)
 	_flash.size = size
 	_pause.size = size
-	_captions.size = size
+	# 자막 층은 리본 아래부터. 핵심 자막이 탭을 받는 동안에도 일시정지 버튼은 눌린다.
+	_captions.position = Vector2(0, ribbon_top + ribbon_h)
+	_captions.size = Vector2(size.x, size.y - ribbon_top - ribbon_h)
 
 
 ## 노치·펀치홀 아래로 리본을 내린다. 화면 좌표를 이 컨트롤의 좌표로 바꿔 쓴다.
