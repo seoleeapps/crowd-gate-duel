@@ -64,7 +64,7 @@ func lock(pick: int) -> void:
 
 
 ## 공개. 같은 칸이면 두 표식이 한 칸에 나란히 붙고 연결된다.
-## 양보 사건은 먼저 지나간 쪽 표식에 오르막 표시, 동수 반감은 양쪽에 절반 표시를 붙인다.
+## 양보 사건은 먼저 지나간 쪽 표식에 오르막, 막힌 쪽 표식에 통행 금지 표시, 동수 반감은 양쪽에 절반 표시를 붙인다.
 func reveal(step: Dictionary, opp_label: String) -> Tween:
 	var events: Array = step["events"]
 	var pick_me: int = int(step["pick_me"])
@@ -76,8 +76,10 @@ func reveal(step: Dictionary, opp_label: String) -> Tween:
 		opp_icon = GateCell.HALF_ICON
 	elif events.has("yield_to_a"):
 		me_icon = GateCell.YIELD_ICON
+		opp_icon = GateCell.BLOCKED_ICON
 	elif events.has("yield_to_b"):
 		opp_icon = GateCell.YIELD_ICON
+		me_icon = GateCell.BLOCKED_ICON
 	var tween: Tween = create_tween().set_parallel()
 	for i: int in range(cells.size()):
 		var marks: Array[Dictionary] = []
@@ -87,6 +89,15 @@ func reveal(step: Dictionary, opp_label: String) -> Tween:
 			marks.append({"mine": false, "label": opp_label, "icon": opp_icon})
 		tween.tween_subtween(cells[i].reveal(marks))
 	return tween
+
+
+## 온보딩 핵심 순간: 두 표식이 붙은 칸을 두 번 크게 두드려 보인다.
+func pulse(index: int) -> void:
+	var cell: GateCell = cells[index]
+	cell.pivot_offset = cell.size / 2.0
+	var tween: Tween = create_tween().set_loops(2)
+	tween.tween_property(cell, "scale", Vector2.ONE * 1.06, 0.18)
+	tween.tween_property(cell, "scale", Vector2.ONE, 0.18)
 
 
 func _point_hand(index: int) -> void:

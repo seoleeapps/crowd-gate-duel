@@ -269,3 +269,21 @@ msgstr "축제 줄무늬"
 
 msgid "ITEM_BORDER_BUNTING"
 msgstr "삼각 깃발 줄"
+
+msgid "ONB_PICK"
+msgstr "칸을 고르면 무리가 불어나요"
+
+msgid "ONB_DIFFERENT"
+msgstr "다른 칸을 고르면 각자 가져가요"
+
+msgid "ONB_YIELD_ME"
+msgstr "같은 칸! 적은 쪽이 먼저 지나가요"
+
+msgid "ONB_BLOCKED"
+msgstr "앞서 있으면 같은 칸에서 막혀요"
+
+msgid "ONB_AIM"
+msgstr "뒤처져 있어요. 상대가 고를 칸을 노려 보세요"
+
+msgid "TAP_CONTINUE"
+msgstr "탭해서 계속"

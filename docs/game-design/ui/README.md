@@ -61,7 +61,9 @@ viewport 캡처이며 실기기 확인이 아니다.
 | 동수 12:12 | 시안 보조 장면(동수) | `runtime/1080x2340-ko/duel-tie.png` | 두 무리가 길 방향으로 벌어져 높이가 달라 보이고 표식이 겹침 → 수평으로 벌려 같은 높이에 나란히 세움 | 통과 |
 | 봇 상대 | 시안 보조 장면(봇) | `runtime/1080x2340-ko/duel-bot.png`, `runtime/1080x2340-en/duel-bot.png` | 차이 없음. 무채색 막대 깃발과 로봇 아이콘·"봇" 배지 | 통과 |
 | 온보딩 1구간 손 안내 | 시안 없음(같은 방향 파생) | `runtime/1080x2340-ko/onboarding-hand.png` | 손이 수치 "+4" 를 가림 → 칸 오른쪽 아래로 옮김 | 통과 |
-| 온보딩 2구간 양보 사건 | 시안 없음(같은 방향 파생) | `runtime/1080x2340-ko/onboarding-yield.png` | 차이 없음. 한 칸에 나(오르막 표식)·연습 표식이 나란히 붙는다 | 통과 |
+| 온보딩 2구간 다른 칸 + 자막 | 시안 없음(같은 방향 파생) | `runtime/1080x2340-ko/onboarding-different.png` | 실기기 2초 간격 캡처에 한 번도 잡히지 않을 만큼 짧음 → 1.6초에서 2.2초로 늘림 | 통과 |
+| 온보딩 3구간 양보 사건 + 자막 | 시안 없음(같은 방향 파생) | `runtime/1080x2340-ko/onboarding-yield.png`, `runtime/1080x2340-en/onboarding-yield.png` | 영어 자막이 두 줄로 늘어나 선두 수치 표식을 가림 → 영어 문구를 줄여 한 줄로 맞춤 | 통과 |
+| 온보딩 4구간 막힘 사건 + 자막 | 시안 없음(같은 방향 파생) | `runtime/1080x2340-ko/onboarding-blocked.png`, `runtime/1080x2340-en/onboarding-blocked.png` | 막힘 표식에 자물쇠를 쓰면 "선택 잠김"과 뜻이 겹침 → 통행 금지 표시로 바꿈 | 통과 |
 | 결과 | 시안 없음(같은 방향 파생) | `runtime/1080x2340-ko/result.png`, `runtime/1080x2340-en/result.png` | 충돌 장면이 뭉개지고 리본이 함께 찍힘 → 정상 아래에서 좌우로 만나게 하고 리본을 잘라 냄 | 통과 |
 | 홈 | 시안 없음(같은 방향 파생) | `runtime/1080x2340-ko/home.png`, `runtime/1080x2340-en/home.png` | 차이 없음 | 통과 |
 | 짧은 화면 1080×1620 | 같은 기준 | `runtime/1080x1620-ko/duel-commit.png`, `runtime/1080x1620-ko/result.png` | 결승선이 리본과 겹침 → 언덕길을 리본 아래에서 시작. 결과 버튼이 화면 밖으로 밀림 → 장면이 남는 공간만 쓰게 함. 선두 무리 표식이 결승선 깃발과 일부 겹치는 것은 남아 있다 | 부분 통과 |
@@ -76,7 +78,7 @@ viewport 캡처이며 실기기 확인이 아니다.
 
 | 기기 | 빌드 | 확인한 것 | 증거 |
 | --- | --- | --- | --- |
-| Seeker (Android, 1200×2670) | `scripts/build.sh --debug` 디버그 APK, 2026-09-29 | 설치·실행, 온보딩 1구간 손 안내, 2구간 양보 사건(나 32 : 연습 18, 한 칸에 두 표식), 3구간 진행. adb 탭으로 조작 | `device/seeker-onboarding-1.png`, `device/seeker-onboarding-2-yield.png`, `device/seeker-onboarding-3.png` |
+| Seeker (Android, 1200×2670) | `scripts/build.sh --debug` 디버그 APK, 2026-09-30 | 5구간 자막 온보딩(DEC-017)을 아무것도 누르지 않고 끝까지 진행. 3구간 양보(나 44 : 연습 27), 4구간 막힘(나 44 : 연습 47), 5구간 안내 자막. 걸린 시간: 탭하며 18초, 무입력 44초(로그 타임스탬프) | `device/seeker-onboarding-v2-yield.png`, `device/seeker-onboarding-v2-blocked.png`, `device/seeker-onboarding-v2-aim.png` |
 
 실기기에서 찾은 차이: 증가 입자가 무리가 옮겨 가기 전 자리에서 튀어 상대 무리 근처에 보였다 → 입자를 무리에 붙여 함께 움직이게 고쳤다.
 실기기에서 아직 보지 않은 것: 손가락 직접 조작 감각, 햅틱 세기, 소리 크기, 프레임 측정, 일반 대국 전체.
