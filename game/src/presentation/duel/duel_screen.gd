@@ -35,8 +35,11 @@ var band: GateBand
 var ribbon: ProgressRibbon
 var timer: CommitTimer
 var _pause: PauseOverlay
+var _captions: CaptionLayer
 var _flash: ColorRect
 var _ms_carry: float = 0.0
+## 핵심 순간을 느리게 보여 주는 동안 바꾼 시간 배율. 화면이 도중에 사라져도 되돌린다.
+var _saved_time_scale: float = -1.0
 var _waiting_commit: bool = false
 
 
@@ -58,6 +61,8 @@ func _ready() -> void:
 	add_child(band)
 	timer = CommitTimer.new()
 	add_child(timer)
+	_captions = CaptionLayer.new()
+	add_child(_captions)
 	_flash = ColorRect.new()
 	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_flash.color = Color(0, 0, 0, 0)
@@ -116,6 +121,7 @@ func _layout() -> void:
 	timer.size = Vector2(size.x, timer_h)
 	_flash.size = size
 	_pause.size = size
+	_captions.size = size
 
 
 ## 노치·펀치홀 아래로 리본을 내린다. 화면 좌표를 이 컨트롤의 좌표로 바꿔 쓴다.
@@ -144,12 +150,16 @@ func _run() -> void:
 			feedback.set_intensity(_progress())
 		world.opp_chip.set_locked(true)
 		var guided: int = Onboarding.guided_pick(session.segment_index) if tutorial else -1
+		var caption: Dictionary = Onboarding.caption(session.segment_index) if tutorial else {}
 		segment_presented.emit(session.segment_index)
+		if not str(caption.get("before", "")).is_empty():
+			_captions.show_caption(caption["before"], str(caption.get("icon", "")), false)
 		await band.present(session.current_gates(), guided).finished
 		_ms_carry = 0.0
 		_waiting_commit = true
 		var step: Dictionary = await committed
-		await _resolve(step)
+		_captions.hide_caption()
+		await _resolve(step, caption)
 		segment_resolved.emit()
 	await _finale()
 
@@ -171,7 +181,12 @@ func _on_step(step: Dictionary) -> void:
 
 
 ## 공개 → 사건 연출 → 무리 변화. 한 구간의 해소 연출은 1.5초 안쪽이다(02 경험 타임라인).
-func _resolve(step: Dictionary) -> void:
+## caption 은 온보딩 자막 설정이다. focus 면 해소를 느리게 보여 주고 겹친 칸을 강조한 뒤 자막에서 멈춘다.
+func _resolve(step: Dictionary, caption: Dictionary = {}) -> void:
+	var focus: bool = bool(caption.get("focus", false))
+	if focus:
+		_saved_time_scale = Engine.time_scale
+		Engine.time_scale = _saved_time_scale * 0.5
 	world.opp_chip.set_locked(false)
 	_feel("flip")
 	await band.reveal(step, _opp_label()).finished
@@ -212,7 +227,16 @@ func _resolve(step: Dictionary) -> void:
 		world.burst(false, d_opp)
 	elif d_opp < 0:
 		world.sink(false, -d_opp)
+	if focus:
+		band.pulse(int(step["pick_me"]))
 	await world.set_standing(int(step["me"]), int(step["opp"]), _progress(), true).finished
+	_restore_time_scale()
+	var after: String = str(caption.get("after", ""))
+	if not after.is_empty():
+		await _captions.show_caption(after, str(caption.get("icon", "")), focus)
+		if not focus:
+			await get_tree().create_timer(2.2).timeout
+		_captions.hide_caption()
 	await get_tree().create_timer(HOLD_SECONDS).timeout
 
 
@@ -249,6 +273,16 @@ func _shake() -> void:
 		var offset: Vector2 = Vector2(8 if i % 2 == 0 else -8, 4 if i < 2 else -4) * Palette.DP
 		tween.tween_property(world, "position", offset, 0.04)
 	tween.tween_property(world, "position", Vector2.ZERO, 0.05)
+
+
+func _exit_tree() -> void:
+	_restore_time_scale()
+
+
+func _restore_time_scale() -> void:
+	if _saved_time_scale > 0.0:
+		Engine.time_scale = _saved_time_scale
+		_saved_time_scale = -1.0
 
 
 func _feel(sound: String, vibrate_ms: int = 0, strength: float = 0.0, pitch: float = 1.0) -> void:

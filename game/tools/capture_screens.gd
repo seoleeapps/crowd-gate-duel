@@ -59,9 +59,13 @@ func _run() -> void:
 	if _wants("duel-tie"):
 		await _capture_duel("duel-tie", _tie_session(), 0.6)
 	if _wants("onboarding-hand"):
-		await _capture_onboarding("onboarding-hand", 0.72 + 0.35 + 0.5, 0)
+		await _capture_onboarding("onboarding-hand", 0.72 + 0.35 + 0.6, 0)
+	if _wants("onboarding-different"):
+		await _capture_onboarding("onboarding-different", 0.0, 1)
 	if _wants("onboarding-yield"):
-		await _capture_onboarding("onboarding-yield", 0.0, 1)
+		await _capture_onboarding("onboarding-yield", 0.0, 2)
+	if _wants("onboarding-blocked"):
+		await _capture_onboarding("onboarding-blocked", 0.0, 3)
 	if _wants("result"):
 		await _capture_result()
 	if _wants("home"):
@@ -131,11 +135,19 @@ func _capture_onboarding(name: String, wait: float, segment: int) -> void:
 		await create_timer(wait).timeout
 	else:
 		# 안내 칸을 차례로 눌러 2구간 공개(양보 사건) 직후를 찍는다.
+		# 안내 칸을 차례로 눌러 그 구간의 핵심 순간 자막이 뜬 직후를 찍는다.
 		for i: int in range(segment + 1):
 			while not screen._waiting_commit:
 				await process_frame
 			screen._on_picked(Onboarding.guided_pick(i))
-		await screen.band.cells[0].get_tree().create_timer(0.35).timeout
+		var focus: bool = bool(Onboarding.caption(segment).get("focus", false))
+		var waited: int = 0
+		while not (screen._captions.visible and (screen._captions._hint.visible or not focus)) and waited < 600:
+			await process_frame
+			waited += 1
+		if waited >= 600:
+			push_error("[capture] %s 자막이 뜨지 않았다" % name)
+		await create_timer(0.3).timeout
 	await _save(name)
 
 

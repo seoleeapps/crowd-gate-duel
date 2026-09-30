@@ -269,3 +269,21 @@ msgstr "Festival stripes"
 
 msgid "ITEM_BORDER_BUNTING"
 msgstr "Bunting"
+
+msgid "ONB_PICK"
+msgstr "Pick a gate to grow"
+
+msgid "ONB_DIFFERENT"
+msgstr "Different gates: both grow"
+
+msgid "ONB_YIELD_ME"
+msgstr "Same gate: fewer goes first"
+
+msgid "ONB_BLOCKED"
+msgstr "Ahead? A shared gate blocks you"
+
+msgid "ONB_AIM"
+msgstr "Behind? Take the gate they want"
+
+msgid "TAP_CONTINUE"
+msgstr "Tap to continue"

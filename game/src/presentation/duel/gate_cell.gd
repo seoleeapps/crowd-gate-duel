@@ -14,6 +14,7 @@ const ICONS: Dictionary = {
 const LOCK_ICON: Texture2D = preload("res://assets/art/lock.svg")
 const HALF_ICON: Texture2D = preload("res://assets/art/half.svg")
 const YIELD_ICON: Texture2D = preload("res://assets/art/yield.svg")
+const BLOCKED_ICON: Texture2D = preload("res://assets/art/blocked.svg")
 
 var gate: Gate
 ## 색각 보조 표시 강화(SCR-006). 켜면 종류마다 다른 바탕 무늬를 더한다.
