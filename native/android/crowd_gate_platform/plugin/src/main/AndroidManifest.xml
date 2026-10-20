@@ -6,7 +6,7 @@
         <meta-data android:name="org.godotengine.plugin.v2.CrowdGatePlatform"
             android:value="com.seoleeapps.crowdgateduel.platform.CrowdGatePlatform" />
         <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="${admobAppId}" />
-        <provider android:name="androidx.core.content.FileProvider"
+        <provider android:name="com.seoleeapps.crowdgateduel.platform.ResultCardProvider"
             android:authorities="${applicationId}.resultcards"
             android:exported="false" android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/result_cards" />

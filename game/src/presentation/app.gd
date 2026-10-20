@@ -5,6 +5,8 @@ var progress: ProgressStore
 var ads: InterstitialAdPort
 var ad_breaks: InterstitialGate
 var share: SharePort
+var pause_on_focus_loss: bool = true
+var seed_clock: Callable = Time.get_ticks_usec
 var in_foreground: bool = true
 var feedback: Feedback
 
@@ -38,7 +40,7 @@ func commit_ms(band: int) -> int:
 	return base * 3 / 2 if commit_extended() else base
 
 func fallback_seed(band: int) -> String:
-	return "%d|%d|%d" % [Time.get_ticks_usec(), now_unix(), band]
+	return "%d|%d" % [int(seed_clock.call()), band]
 
 static func _progress_path() -> String:
 	var args: PackedStringArray = OS.get_cmdline_user_args()

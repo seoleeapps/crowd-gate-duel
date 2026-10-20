@@ -18,6 +18,8 @@ func _run() -> void:
 		return
 	AtomicFileStore.remove(path)
 	app = root.get_node("App")
+	app.pause_on_focus_loss = false
+	app.seed_clock = func() -> int: return 20261021
 	app.progress = ProgressStore.new(path)
 	app.progress.read()
 	app.progress.set_setting("sound", false)
@@ -52,6 +54,7 @@ func _run() -> void:
 	await e2e.wait_for(func() -> bool: return duel._waiting_commit, 3000)
 	e2e.step("quiz wrong input", await e2e.tap(duel.band.cells[1]))
 	await e2e.wait_for(func() -> bool: return duel._captions._waiting, 3000)
+	await create_timer(0.25).timeout
 	await e2e.shot("02-quiz-mistake")
 	e2e.expect_equal("wrong answer keeps checkpoint", app.progress.tutorial_step(), 4)
 	await e2e.tap(duel._captions)
@@ -129,6 +132,36 @@ func _run() -> void:
 	e2e.expect_equal("result persists restart", _games(), 1)
 	e2e.step("desktop share is local boundary", app.share is SharePort)
 	e2e.end()
+	await e2e.unmount(main)
+	e2e.begin("special-gates-and-progress-recovery", ["duel", "progress", "settings", "ads"])
+	# Precondition: an established band-5 player, persisted before the actual main scene is mounted.
+	app.progress.data["band"] = 5
+	app.progress.data["wins"] = 80
+	app.progress.write()
+	await _mount()
+	home = await _screen(HomeScreen)
+	await _tap_text(home, "PLAY")
+	duel = await _screen(DuelScreen)
+	await _play_normal(duel)
+	result = await _screen(ResultScreen)
+	e2e.step("steal lesson acknowledged", app.progress.lesson_seen(Gate.Kind.STEAL))
+	e2e.step("shield lesson acknowledged", app.progress.lesson_seen(Gate.Kind.SHIELD))
+	e2e.step("higher difficulty remains unlocked", app.progress.band() == 5)
+	await _tap_text(result, "HOME")
+	# Corrupt only the dedicated run's primary file, then let normal atomic read recover its backup.
+	await e2e.unmount(main)
+	var saved_feathers: int = int(AtomicFileStore.read(path + AtomicFileStore.BACKUP_SUFFIX)["data"].get("feathers", -1))
+	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
+	file.store_string("broken-test-save")
+	file.close()
+	app.progress = ProgressStore.new(path)
+	app.progress.read()
+	e2e.expect_equal("damaged primary falls back to backup", app.progress.loaded_from, "backup")
+	e2e.expect_equal("backup reward balance restored", app.progress.feathers(), saved_feathers)
+	await _mount()
+	e2e.step("recovery still enters application", await e2e.wait_for(func() -> bool:
+		return main._current is HomeScreen or main._current is DuelScreen, 3000))
+	e2e.end()
 	app.feedback.stop_all()
 	await e2e.unmount(main)
 	var status: int = e2e.finish({"sourceSha": OS.get_environment("GITHUB_SHA"), "locale": locale})
@@ -160,6 +193,9 @@ func _tutorial_until(duel: DuelScreen, target: int) -> void:
 		elif duel._waiting_commit:
 			if duel.session.segment_index >= target:
 				return
+			if duel.session.segment_index >= 4:
+				await create_timer(0.3).timeout
+				await e2e.shot("quiz-preview-%d" % duel.session.segment_index)
 			var index: int = Onboarding.ANSWERS[duel.session.segment_index]
 			e2e.step("tap tutorial gate", await e2e.tap(duel.band.cells[index]))
 		await process_frame
@@ -170,6 +206,10 @@ func _play_normal(duel: DuelScreen) -> void:
 		if not is_instance_valid(duel) or duel.session.is_finished():
 			return
 		if duel._captions._waiting:
+			var remaining: int = duel.session.remaining_ms
+			await create_timer(0.3).timeout
+			e2e.expect_equal("special example pauses countdown", duel.session.remaining_ms, remaining)
+			await e2e.shot("lesson-%s" % ("shield" if app.progress.lesson_seen(Gate.Kind.STEAL) else "steal"))
 			await e2e.tap(duel._captions)
 		elif duel._waiting_commit:
 			await e2e.shot("normal-gate-%d" % duel.session.segment_index)

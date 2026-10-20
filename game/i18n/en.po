@@ -167,7 +167,7 @@ msgid "SET_COMMIT_EXT"
 msgstr "Longer pick time (×1.5)"
 
 msgid "SET_COMMIT_EXT_DESC"
-msgstr "You will be matched with records made with the same setting."
+msgstr "Gives you 50% more time to choose a gate."
 
 msgid "SET_VIBRATION"
 msgstr "Vibration"

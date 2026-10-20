@@ -278,18 +278,23 @@ func _finale() -> void:
 	await get_tree().process_frame
 	var scene: Image = null
 	if DisplayServer.get_name() != "headless":
-		scene = get_viewport().get_texture().get_image()
+		var area: Rect2 = world.get_global_rect()
+		var top: float = maxf(area.position.y, ribbon.get_global_rect().end.y)
+		area.position.y = top
+		area.size.y = band.get_global_rect().position.y - top
+		scene = get_viewport().get_texture().get_image().get_region(Rect2i(area))
 	await fade.finished
 	await get_tree().create_timer(0.6).timeout
 	finished.emit(scene)
 
 
 func _shake() -> void:
+	var origin: Vector2 = world.position
 	var tween: Tween = create_tween()
 	for i: int in range(4):
 		var offset: Vector2 = Vector2(8 if i % 2 == 0 else -8, 4 if i < 2 else -4) * Palette.DP
-		tween.tween_property(world, "position", offset, 0.04)
-	tween.tween_property(world, "position", Vector2.ZERO, 0.05)
+		tween.tween_property(world, "position", origin + offset, 0.04)
+	tween.tween_property(world, "position", origin, 0.05)
 
 
 func _exit_tree() -> void:
@@ -314,6 +319,7 @@ func _open_pause() -> void:
 	if _pause.visible or session == null:
 		return
 	session.pause()
+	checkpoint.emit()
 	_pause.open()
 
 

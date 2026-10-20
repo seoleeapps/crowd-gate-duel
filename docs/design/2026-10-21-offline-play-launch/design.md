@@ -1,5 +1,7 @@
 # Crowd Gate Duel 완성과 Google Play 공개 출시
 
+실행 티켓: https://github.com/seoleeapps/crowd-gate-duel/issues/7
+
 승인 근거는 2026-10-21 대화의 구현 지시와 전달된 전체 출시 계획이다. 제품명 Crowd Gate Duel, 한국어명 갈림길 군중 대전, 오프라인 봇 전용, 전면광고, 13세 이상, 영어와 한국어, 지원 가능한 국가 전체, Google Play 공개 100%까지가 승인 범위다. Seolee Apps 계정을 명시한 사용자 결정을 적용한다. 기기 접근은 승인되지 않았다.
 
 ## 흐름과 책임

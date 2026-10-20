@@ -102,6 +102,7 @@ func _start_onboarding(replay: bool = false) -> void:
 func _duel_screen(session: DuelSession, tutorial: bool) -> DuelScreen:
 	var screen: DuelScreen = DuelScreen.new()
 	screen.setup(session, tutorial)
+	screen.pause_when_backgrounded = App.pause_on_focus_loss
 	screen.lesson_store = App.progress
 	screen.feedback = App.feedback
 	screen.reduce_shake = bool(App.progress.setting("reduce_shake"))

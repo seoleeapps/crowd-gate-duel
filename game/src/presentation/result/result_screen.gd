@@ -88,7 +88,7 @@ func _scene_view() -> Control:
 	var rect: TextureRect = TextureRect.new()
 	rect.custom_minimum_size = Vector2(0, 72 * Palette.DP)
 	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if scene != null and not scene.is_empty():
 		rect.texture = ImageTexture.create_from_image(scene_crop(scene))
 	frame.add_child(rect)
@@ -98,12 +98,8 @@ func _scene_view() -> Control:
 
 ## 충돌 장면에서 정상 부근만 잘라 낸다. 공유 카드도 같은 잘라 낸 장면을 쓴다.
 static func scene_crop(image: Image) -> Image:
-	var w: int = image.get_width()
-	var h: int = image.get_height()
-	# 위쪽 진행 리본과 일시정지 버튼은 장면이 아니므로 잘라 낸다.
-	var top: int = mini(int(float(w) / 360.0 * DuelScreen.RIBBON_DP), h - 1)
-	var crop_h: int = mini(h - top, int(float(w) * 0.9))
-	return image.get_region(Rect2i(0, top, w, crop_h))
+	return image
+
 
 
 func _result_word() -> Label:

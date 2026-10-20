@@ -13,6 +13,18 @@ if [ ! -f "$ROOT/game/android/build/build.gradle" ]; then
   mkdir -p "$ROOT/game/android/build"
   unzip -q "$TEMPLATES/android_source.zip" -d "$ROOT/game/android/build"
 fi
+python3 - "$ROOT/game/android/build" "$ANDROID_GRADLE_PLUGIN" "$ANDROID_GRADLE_VERSION" <<'PYTHON'
+from pathlib import Path
+import re, sys
+build = Path(sys.argv[1])
+config = build / "config.gradle"
+text, count = re.subn(r"androidGradlePlugin: '[^']+'", "androidGradlePlugin: '" + sys.argv[2] + "'", config.read_text())
+if count != 1:
+    raise SystemExit("Android template AGP declaration mismatch")
+config.write_text(text)
+wrapper = build / "gradle/wrapper/gradle-wrapper.properties"
+wrapper.write_text(re.sub(r"gradle-[0-9.]+-bin.zip", "gradle-" + sys.argv[3] + "-bin.zip", wrapper.read_text()))
+PYTHON
 printf '%s\n' "${GODOT_VERSION}.${GODOT_STATUS}" > "$ROOT/game/android/.build_version"
 mkdir -p "$ROOT/game/android/plugins"
 touch "$ROOT/game/android/.gdignore"

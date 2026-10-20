@@ -167,7 +167,7 @@ msgid "SET_COMMIT_EXT"
 msgstr "고르는 시간 1.5배"
 
 msgid "SET_COMMIT_EXT_DESC"
-msgstr "켜면 같은 설정으로 둔 기록과 맞붙어요."
+msgstr "게이트를 고르는 시간이 1.5배로 늘어나요."
 
 msgid "SET_VIBRATION"
 msgstr "진동"

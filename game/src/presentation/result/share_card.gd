@@ -38,7 +38,7 @@ func _build(scene: Image, me: int, opp: int, result_color: Color, border: String
 	if scene != null and not scene.is_empty():
 		picture.texture = ImageTexture.create_from_image(ResultScreen.scene_crop(scene))
 	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	picture.size = Vector2(root.size.x, root.size.y - 150 * dp)
 	root.add_child(picture)
 	var strip: ColorRect = ColorRect.new()
