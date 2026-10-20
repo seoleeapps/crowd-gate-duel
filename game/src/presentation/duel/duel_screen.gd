@@ -10,6 +10,8 @@ extends Control
 
 signal segment_presented(index: int)
 signal committed(step: Dictionary)
+signal tutorial_accepted(next_step: int)
+signal checkpoint
 signal segment_resolved
 signal finished(scene: Image)
 
@@ -22,6 +24,7 @@ const HOLD_SECONDS: float = 0.45
 var session: DuelSession
 var tutorial: bool = false
 ## 아래는 화면을 붙이기 전에 화면 전환 루트가 채운다. 비워 두면 소리 없이 기본 모습으로 동작한다.
+var lesson_store: ProgressStore = null
 var feedback: Feedback = null
 var reduce_shake: bool = false
 var colorblind_assist: bool = false
@@ -154,15 +157,24 @@ func _run() -> void:
 		var guided: int = Onboarding.guided_pick(session.segment_index) if tutorial else -1
 		var caption: Dictionary = Onboarding.caption(session.segment_index) if tutorial else {}
 		segment_presented.emit(session.segment_index)
+		checkpoint.emit()
 		if not str(caption.get("before", "")).is_empty():
 			_captions.show_caption(caption["before"], str(caption.get("icon", "")), false)
 		await band.present(session.current_gates(), guided).finished
+		if tutorial:
+			band.preview_opponent(Onboarding.OPPONENT_PICKS[session.segment_index])
+		else:
+			await _show_gate_lessons()
 		_ms_carry = 0.0
 		_waiting_commit = true
 		var step: Dictionary = await committed
 		_captions.hide_caption()
 		await _resolve(step, caption)
-		segment_resolved.emit()
+		if tutorial and not Onboarding.accepted(step):
+			Onboarding.retry(session)
+			world.set_standing(session.crowd_me, session.crowd_opp, _progress(), false)
+		else:
+			segment_resolved.emit()
 	await _finale()
 
 
@@ -179,13 +191,15 @@ func _on_step(step: Dictionary) -> void:
 	_feel("lock", 20, 0.3)
 	band.lock(int(step["pick_me"]))
 	timer.set_time(0, session.commit_ms)
+	if tutorial and Onboarding.accepted(step):
+		tutorial_accepted.emit(session.segment_index + 1)
 	committed.emit(step)
 
 
 ## 공개 → 사건 연출 → 무리 변화. 한 구간의 해소 연출은 1.5초 안쪽이다(02 경험 타임라인).
 ## caption 은 온보딩 자막 설정이다. focus 면 해소를 느리게 보여 주고 겹친 칸을 강조한 뒤 자막에서 멈춘다.
 func _resolve(step: Dictionary, caption: Dictionary = {}) -> void:
-	var focus: bool = bool(caption.get("focus", false))
+	var focus: bool = tutorial and bool(step["split"])
 	if focus:
 		_saved_time_scale = Engine.time_scale
 		Engine.time_scale = _saved_time_scale * 0.5
@@ -233,11 +247,12 @@ func _resolve(step: Dictionary, caption: Dictionary = {}) -> void:
 		band.pulse(int(step["pick_me"]))
 	await world.set_standing(int(step["me"]), int(step["opp"]), _progress(), true).finished
 	_restore_time_scale()
-	var after: String = str(caption.get("after", ""))
-	if not after.is_empty():
-		await _captions.show_caption(after, str(caption.get("icon", "")), focus)
-		if not focus:
-			await get_tree().create_timer(2.2).timeout
+	if tutorial:
+		var after: String = str(caption.get("after", ""))
+		if not Onboarding.accepted(step):
+			after = "ONB_RETRY_BEHIND" if session.segment_index == 4 else "ONB_RETRY_AHEAD"
+		var numbers: String = "%d → %d   :   %d → %d" % [step["before_me"], step["me"], step["before_opp"], step["opp"]]
+		await _captions.show_caption(after, str(caption.get("icon", "")), true, numbers)
 		_captions.hide_caption()
 	await get_tree().create_timer(HOLD_SECONDS).timeout
 
@@ -325,3 +340,22 @@ func _opp_label() -> String:
 		CrowdView.Badge.PRACTICE:
 			return tr("CHIP_PRACTICE")
 	return tr("CHIP_OPP")
+
+## 처음 등장한 특수 게이트는 입력과 시계를 멈추고 실제 정수 판정 예시를 보여 준다.
+func _show_gate_lessons() -> void:
+	if lesson_store == null:
+		return
+	for kind: Gate.Kind in [Gate.Kind.STEAL, Gate.Kind.SHIELD]:
+		if lesson_store.lesson_seen(kind):
+			continue
+		var found: bool = session.current_gates().any(func(gate: Gate) -> bool: return gate.kind == kind)
+		if not found:
+			continue
+		session.pause()
+		var example: Dictionary = GateLessons.example(kind)
+		await _captions.show_caption(example["caption"], "steal" if kind == Gate.Kind.STEAL else "shield", true, example["numbers"])
+		_captions.hide_caption()
+		lesson_store.mark_lesson(kind)
+		lesson_store.write()
+		if not _pause.visible:
+			session.resume()

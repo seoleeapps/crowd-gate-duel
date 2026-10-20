@@ -7,7 +7,6 @@ extends Control
 ## 사전 고지로 보여 주고, 오프라인이거나 오늘 상한을 다 쓰면 숨긴다(DEC-007).
 
 signal rematch_pressed
-signal ad_retry_pressed
 signal share_pressed
 signal home_pressed
 
@@ -16,16 +15,14 @@ var scene: Image
 ## { "feathers": int, "daily_first_win": bool, "band_before": int, "band_after": int }
 var reward: Dictionary = {}
 var tutorial: bool = false
-var ad_retries_left: int = 0
 var toast: Label
 
 
-func setup(session_in: DuelSession, scene_in: Image, reward_in: Dictionary, tutorial_in: bool, ad_retries_left_in: int) -> void:
+func setup(session_in: DuelSession, scene_in: Image, reward_in: Dictionary, tutorial_in: bool) -> void:
 	session = session_in
 	scene = scene_in
 	reward = reward_in
 	tutorial = tutorial_in
-	ad_retries_left = ad_retries_left_in
 
 
 func _ready() -> void:
@@ -57,8 +54,6 @@ func _ready() -> void:
 	if rewards != null:
 		column.add_child(rewards)
 
-	if _offers_ad_retry():
-		column.add_child(_ad_retry_block())
 	column.add_child(_buttons())
 	toast = _text("", 14, 500, Palette.INK_SOFT)
 	toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -81,10 +76,6 @@ func result_color() -> Color:
 		DuelEngine.RESULT_B_WIN:
 			return Palette.CHIP_OPP
 	return Palette.TIE
-
-
-func _offers_ad_retry() -> bool:
-	return not tutorial and session.result() == DuelEngine.RESULT_B_WIN and ad_retries_left > 0
 
 
 func _scene_view() -> Control:
@@ -197,20 +188,6 @@ func _reward_line() -> Label:
 	var label: Label = _text(" · ".join(parts), 16, 700, Palette.INK)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	return label
-
-
-func _ad_retry_block() -> Control:
-	var column: VBoxContainer = VBoxContainer.new()
-	column.add_theme_constant_override("separation", int(6 * Palette.DP))
-	var notice: Label = _text(tr("AD_RETRY_NOTICE"), 13, 500, Palette.INK_SOFT)
-	notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(notice)
-	var button: Button = Button.new()
-	UiTheme.secondary_button(button, "%s · %s" % [tr("AD_RETRY"), tr("AD_RETRY_LEFT") % ad_retries_left])
-	button.pressed.connect(func() -> void: ad_retry_pressed.emit())
-	column.add_child(button)
-	return column
 
 
 func _buttons() -> Control:

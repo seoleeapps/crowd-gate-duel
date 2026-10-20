@@ -10,17 +10,15 @@ signal settings_pressed
 
 var band: int = 1
 var feathers: int = 0
-var online: bool = true
 var my_color: Color = Palette.MINE
 var my_flag: String = "chevron"
 
 var _start: Button
 
 
-func setup(band_in: int, feathers_in: int, online_in: bool) -> void:
+func setup(band_in: int, feathers_in: int) -> void:
 	band = band_in
 	feathers = feathers_in
-	online = online_in
 
 
 func _ready() -> void:
@@ -58,16 +56,6 @@ func _ready() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(spacer)
 	top.add_child(_pill("◆ %d" % feathers, Palette.INK))
-
-	if not online:
-		var offline: Label = Label.new()
-		offline.text = tr("OFFLINE")
-		offline.add_theme_font_override("font", UiTheme.text_font(700))
-		offline.add_theme_font_size_override("font_size", int(13 * dp))
-		offline.add_theme_color_override("font_color", Palette.INK_SOFT)
-		offline.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-		offline.offset_top = 64 * dp
-		add_child(offline)
 
 	_start = Button.new()
 	UiTheme.primary_button(_start, tr("PLAY"))

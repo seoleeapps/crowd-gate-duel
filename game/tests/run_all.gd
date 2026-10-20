@@ -7,6 +7,8 @@ extends SceneTree
 func _initialize() -> void:
 	var suites: Array[TestBase] = []
 	print("[run_all] 갈림길 군중 대전 도메인·응용 테스트 시작")
+	suites.append(TestLaunchContract.run())
+	suites.append(TestInterstitial.run())
 	suites.append(TestPcg32.run())
 	suites.append(TestGateRules.run())
 	suites.append(TestDeterminism.run())

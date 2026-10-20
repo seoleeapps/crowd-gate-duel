@@ -1,6 +1,6 @@
 # crowd-gate-duel — 에이전트 작업 규칙
 
-갈림길 군중 대전. Godot 4.7 + Firebase, 세로 2D, 멀티마켓(Google Play / App Store / AppsInToss).
+갈림길 군중 대전. Godot 4.7, 오프라인 봇 대전, 세로 2D, 멀티마켓(Google Play / App Store / AppsInToss).
 
 ## 반드시 먼저 읽을 것
 
@@ -43,18 +43,22 @@ Godot 헤드리스는 **스크립트 오류가 있어도 종료 코드 0 을 낼
 
 ## CI
 
-- 워크플로 `Godot Compile`, job 이름도 `Godot Compile`, `runs-on: seorilabs-x64`
+- 워크플로 `Godot Compile`, job 이름도 `Godot Compile`, 공개 저장소의 `runs-on: ubuntu-latest`
 - 버전은 `build.env` 가 유일한 선언이다. 엔진을 올릴 때 이 파일만 바꾼다
 - 러너·액션 버전 작업은 `seorilabs-arc-runners` 스킬과
   `/Users/syous/Workspace/kubectl/github-actions-runners/global-versions.yaml` 을 따른다
 - **push 는 SSH remote 를 쓴다.** HTTPS OAuth 토큰에는 `workflow` 스코프가 없어
   워크플로 파일 변경이 거부된다
 
+## 출시 기준
+
+2026-10-21 승인된 DEC-018~020이 과거 열린 제품 결정과 원격 대전 계약보다 우선한다. 제품명과 13세 이상, 무료 전면광고, Google Play 공개가 확정됐다. 계정과 기기 검수, 심사 및 공개는 각각 실제 근거로 확인한다.
+
 ## 멈춰야 하는 지점
 
 - 마켓 등록, 스토어 제출, 프로덕션 배포는 별도 배포 승인이 필요하다
-- 열린 결정(DEC-001 수익화, DEC-002 제품명, DEC-005 연령 등급)을 대신 정하지 않는다
-- 제품명은 아직 없다. `crowd-gate-duel` 과 "갈림길 군중 대전"은 작업명이며 스토어 표시명이 아니다
+- 승인된 DEC-018~020 밖의 수익화, 마켓 확장과 제품 결정을 대신 정하지 않는다
+- 제품명은 `Crowd Gate Duel`, 한국어명은 "갈림길 군중 대전"이다
 
 ## 현재 범위
 
@@ -62,5 +66,5 @@ Godot 헤드리스는 **스크립트 오류가 있어도 종료 코드 0 을 낼
 A-0 은 B안 "하나의 언덕길", A-1 은 1안 "한낮 장터"로 통과했다(`docs/game-design/ui/README.md`).
 새 화면과 구성요소는 이 방향과 `presentation/theme` 토큰을 재사용한다.
 꾸미기(SCR-005)·설정(SCR-006)·소리·햅틱과 6주차 다듬기(태블릿 폭 제한, 터치 대상·명암비 자동 검사,
-성능 측정, 색각 시뮬레이션)까지 들어갔다. 남은 것은 실기기 확인과 실제 Firebase·광고·결제 연결이다.
+성능 측정, 색각 시뮬레이션)까지 들어갔다. Google Play 첫 출시는 오프라인 봇과 전면광고로 완결한다. Firebase와 결제는 포함하지 않는다. 네이티브 검수는 별도 승인 뒤에 수행한다.
 효과음은 `scripts/make_sfx.py` 로 만들고, 음악 생성 원본(`game/assets/audio/raw/`)은 커밋하지 않는다.

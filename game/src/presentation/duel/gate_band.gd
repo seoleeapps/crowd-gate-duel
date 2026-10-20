@@ -129,3 +129,7 @@ func _draw() -> void:
 	for i: int in range(1, maxi(cells.size(), 1)):
 		var x: float = size.x * float(i) / float(cells.size())
 		draw_line(Vector2(x, 0), Vector2(x, size.y - 16 * dp), Palette.INK, 1.5 * dp)
+
+func preview_opponent(index: int) -> void:
+	if index >= 0 and index < cells.size():
+		cells[index].reveal([{"mine": false, "label": tr("CHIP_PRACTICE"), "icon": null}])

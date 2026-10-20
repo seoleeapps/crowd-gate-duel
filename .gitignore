@@ -24,3 +24,10 @@ tmp/
 
 # 음악 생성 원본과 이음매 확인용 파일(수십 MB). 최종 ogg/wav 만 커밋한다
 game/assets/audio/raw/
+
+# Native build caches and generated Godot Android template
+**/.gradle/
+**/build/
+**/local.properties
+game/android/
+!game/android/.gdignore

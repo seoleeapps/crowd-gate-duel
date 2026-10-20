@@ -61,19 +61,13 @@ msgid "HOME"
 msgstr "홈"
 
 msgid "SHARE_SAVED"
-msgstr "결과 카드를 저장했어요"
+msgstr "결과 카드 공유"
 
 msgid "SHARE_FAILED"
-msgstr "카드를 저장하지 못했어요"
+msgstr "카드를 공유하지 못했어요."
 
-msgid "AD_RETRY"
-msgstr "광고 보고 다시 도전"
 
-msgid "AD_RETRY_NOTICE"
-msgstr "광고를 끝까지 보면 같은 코스로 한 번 더 도전할 수 있어요. 건너뛰면 재도전은 없어요."
 
-msgid "AD_RETRY_LEFT"
-msgstr "오늘 %d번 남음"
 
 msgid "DECISIVE"
 msgstr "결정적 구간 · %d구간"
@@ -87,8 +81,6 @@ msgstr "오늘 첫 승"
 msgid "BAND_UP"
 msgstr "대역 %d 해금"
 
-msgid "OFFLINE"
-msgstr "오프라인 · 봇과 대국합니다"
 
 msgid "PAUSED"
 msgstr "일시정지"
@@ -217,7 +209,7 @@ msgid "SET_PRIVACY"
 msgstr "개인정보 고지"
 
 msgid "PRIVACY_TEXT"
-msgstr "이름·연락처·위치를 모으지 않아요. 가장 최근 대국 1판을 고른 칸의 순서로만 저장해 다른 사람의 상대로 써요. 진행을 초기화하면 이 기록도 함께 지워져요."
+msgstr "진행은 이 기기에 저장되며 계정이 필요하지 않습니다. Google AdMob과 UMP는 광고 및 동의 관련 데이터를 처리합니다. 자세한 내용은 개인정보처리방침을 확인하세요."
 
 msgid "ITEM_FLAG_CHEVRON"
 msgstr "꺾쇠 깃발"
@@ -271,7 +263,7 @@ msgid "ITEM_BORDER_BUNTING"
 msgstr "삼각 깃발 줄"
 
 msgid "ONB_PICK"
-msgstr "칸을 고르면 무리가 불어나요"
+msgstr "+4를 눌러 군중을 늘려 보세요."
 
 msgid "ONB_DIFFERENT"
 msgstr "다른 칸을 고르면 각자 가져가요"
@@ -282,8 +274,48 @@ msgstr "같은 칸! 적은 쪽이 먼저 지나가요"
 msgid "ONB_BLOCKED"
 msgstr "앞서 있으면 같은 칸에서 막혀요"
 
-msgid "ONB_AIM"
-msgstr "뒤처져 있어요. 상대가 고를 칸을 노려 보세요"
 
 msgid "TAP_CONTINUE"
 msgstr "탭해서 계속"
+
+msgid "ONB_GREW"
+msgstr "내가 고른 게이트가 내 군중을 늘렸어요."
+
+msgid "ONB_TWO"
+msgstr "내 게이트를 고르세요, 상대는 ×1.5를 골라요."
+
+msgid "ONB_BEHIND"
+msgstr "내가 뒤처졌을 때 같은 칸을 골라 보세요."
+
+msgid "ONB_AHEAD"
+msgstr "내가 앞섰을 때도 같은 칸을 골라 보세요."
+
+msgid "ONB_CHECK_BEHIND"
+msgstr "지금은 내가 뒤처졌고, 상대는 ×1.5를 골라요."
+
+msgid "ONB_CHECK_AHEAD"
+msgstr "지금은 내가 앞섰고, 상대는 +20을 골라요."
+
+msgid "ONB_CHECK_OK"
+msgstr "상대의 선택과 순위를 잘 읽었어요."
+
+msgid "ONB_RETRY_BEHIND"
+msgstr "뒤처졌을 때 겹치면 내가 효과를 온전히 받아요."
+
+msgid "ONB_RETRY_AHEAD"
+msgstr "앞섰을 때는 다른 칸을 골라야 나도 늘어나요."
+
+msgid "LESSON_STEAL"
+msgstr "빼앗기는 상대 군중의 일부를 가져와요."
+
+msgid "LESSON_SHIELD"
+msgstr "방패는 상대의 빼앗기를 되돌려 보내요."
+
+msgid "SET_TUTORIAL"
+msgstr "규칙 다시 배우기"
+
+msgid "SET_PRIVACY_OPTIONS"
+msgstr "개인정보 선택"
+
+msgid "SAVE_FAILED"
+msgstr "진행을 저장하지 못했어요, 다시 시도해 주세요."

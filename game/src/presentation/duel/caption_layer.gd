@@ -7,10 +7,11 @@ extends Control
 signal continued
 
 const ICONS: Dictionary = {
+	"steal": preload("res://assets/art/gate_steal.svg"),
+	"shield": preload("res://assets/art/gate_shield.svg"),
 	"yield": preload("res://assets/art/yield.svg"),
 	"blocked": preload("res://assets/art/blocked.svg"),
 }
-const FOCUS_WAIT_SECONDS: float = 4.0
 
 var _card: PanelContainer
 var _icon: TextureRect
@@ -64,8 +65,8 @@ func _ready() -> void:
 
 
 ## 자막을 띄운다. 핵심 순간(wait=true)이면 탭하거나 4초가 지나야 돌아온다.
-func show_caption(key: String, icon: String, wait: bool) -> void:
-	_text.text = tr(key)
+func show_caption(key: String, icon: String, wait: bool, detail: String = "") -> void:
+	_text.text = tr(key) + ("\n" + detail if not detail.is_empty() else "")
 	_icon.texture = ICONS.get(icon, null)
 	_icon.visible = _icon.texture != null
 	_hint.visible = wait
@@ -79,16 +80,13 @@ func show_caption(key: String, icon: String, wait: bool) -> void:
 	var serial: int = _serial
 	_waiting = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	# 일시정지 중에는 멈추는 타이머라, 앱이 백그라운드에 있는 동안 자막이 저절로 닫히지 않는다.
-	get_tree().create_timer(FOCUS_WAIT_SECONDS, false).timeout.connect(func() -> void:
-		if serial == _serial:
-			_continue()
-	)
 	await continued
 
 
 func hide_caption() -> void:
 	visible = false
+	_waiting = false
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func _gui_input(event: InputEvent) -> void:

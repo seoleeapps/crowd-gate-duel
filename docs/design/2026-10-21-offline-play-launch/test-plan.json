@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "level": "L3",
+  "baseline": null,
+  "changedFeatures": ["tutorial", "duel", "progress", "cosmetics", "settings", "ads", "share"],
+  "environments": ["dev"],
+  "redesign": true,
+  "foundationRerun": true,
+  "floorOverrides": [],
+  "release": {"markets": ["google-play"], "until": "public", "rollout": 1}
+}

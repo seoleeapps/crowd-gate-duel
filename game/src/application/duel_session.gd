@@ -62,7 +62,7 @@ func current_gates() -> Array[Gate]:
 ## 경과 시간을 흘린다. 확약 시간이 끝나면 가장 왼쪽 칸이 자동 확약되고 해소 결과를 돌려준다.
 ## 그 외에는 빈 사전을 돌려준다.
 func tick(delta_ms: int) -> Dictionary:
-	if phase != Phase.COMMIT_WAIT or paused:
+	if phase != Phase.COMMIT_WAIT or paused or commit_ms <= 0:
 		return {}
 	remaining_ms = maxi(0, remaining_ms - delta_ms)
 	if remaining_ms > 0:

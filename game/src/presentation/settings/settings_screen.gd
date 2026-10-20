@@ -5,6 +5,8 @@ extends Control
 
 signal back_pressed
 signal settings_changed(key: String)
+signal tutorial_pressed
+signal privacy_options_pressed
 signal reset_confirmed
 
 const TOGGLES: Array[String] = ["commit_extended", "vibration", "sound", "music", "colorblind_assist", "reduce_shake"]
@@ -21,6 +23,7 @@ const TOGGLE_OFF: Texture2D = preload("res://assets/art/toggle_off.svg")
 const LOCALES: Array[String] = ["", "en", "ko"]
 const LOCALE_LABELS: Array[String] = ["LANG_SYSTEM", "LANG_EN", "LANG_KO"]
 
+var privacy_required: bool = false
 var store: ProgressStore
 
 
@@ -65,6 +68,15 @@ func _ready() -> void:
 		languages.add_child(button)
 	list.add_child(languages)
 
+	var tutorial: Button = Button.new()
+	UiTheme.secondary_button(tutorial, tr("SET_TUTORIAL"))
+	tutorial.pressed.connect(func() -> void: tutorial_pressed.emit())
+	list.add_child(tutorial)
+	if privacy_required:
+		var options: Button = Button.new()
+		UiTheme.secondary_button(options, tr("SET_PRIVACY_OPTIONS"))
+		options.pressed.connect(func() -> void: privacy_options_pressed.emit())
+		list.add_child(options)
 	var privacy: Button = Button.new()
 	UiTheme.secondary_button(privacy, tr("SET_PRIVACY"))
 	privacy.pressed.connect(func() -> void: add_child(ConfirmSheet.new(tr("PRIVACY_TEXT"))))
