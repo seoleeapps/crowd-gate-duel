@@ -5,7 +5,9 @@ var progress: ProgressStore
 var ads: InterstitialAdPort
 var ad_breaks: InterstitialGate
 var share: SharePort
-var pause_on_focus_loss: bool = true
+## 개발 여정은 OS 창 포커스를 대체하며, 실제 앱은 기본값으로 처리한다.
+var respect_platform_focus: bool = true
+var commit_clock: Callable
 var seed_clock: Callable = Time.get_ticks_usec
 var in_foreground: bool = true
 var feedback: Feedback
@@ -52,6 +54,8 @@ static func _progress_path() -> String:
 	return ProgressStore.DEFAULT_PATH
 
 func _notification(what: int) -> void:
+	if not respect_platform_focus:
+		return
 	if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		in_foreground = false
 	elif what == NOTIFICATION_APPLICATION_RESUMED or what == NOTIFICATION_APPLICATION_FOCUS_IN:

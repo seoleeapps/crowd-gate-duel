@@ -36,4 +36,19 @@ static func run() -> TestBase:
 	var shield: Dictionary = GateLessons.example(gates, Gate.Kind.SHIELD)
 	t.check_eq(shield["percent"], 10, "방패 반격은 현재 10% 수치")
 	t.check(str(shield["numbers"]).contains("40 → 36"), "방패 반격의 상대 감소")
+	var focus_app: Node = load("res://src/presentation/app.gd").new()
+	var focus_before: bool = focus_app.in_foreground
+	var focus_tracking_before: bool = focus_app.respect_platform_focus
+	focus_app.respect_platform_focus = false
+	focus_app.in_foreground = true
+	focus_app._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	t.check(focus_app.in_foreground, "개발 검수의 포커스 대체는 광고 상태에도 적용")
+	focus_app.respect_platform_focus = true
+	focus_app._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	t.check(not focus_app.in_foreground, "실제 앱의 포커스 상실은 광고 표시를 막는다")
+	focus_app._notification(Node.NOTIFICATION_APPLICATION_FOCUS_IN)
+	t.check(focus_app.in_foreground, "실제 앱의 포커스 복귀 상태 반영")
+	focus_app.respect_platform_focus = focus_tracking_before
+	focus_app.in_foreground = focus_before
+	focus_app.free()
 	return t

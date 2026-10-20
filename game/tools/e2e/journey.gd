@@ -20,7 +20,10 @@ func _run() -> void:
 		return
 	AtomicFileStore.remove(path)
 	app = root.get_node("App")
-	app.pause_on_focus_loss = false
+	app.respect_platform_focus = false
+	app.in_foreground = true
+	# CPU 렌더링과 PNG 저장에 걸린 시간이 자동 선택을 일으키지 않도록 시계만 고정한다.
+	app.commit_clock = func(_delta: float) -> float: return 16.0
 	app.seed_clock = func() -> int: return 20261021
 	app.progress = ProgressStore.new(path)
 	app.progress.read()
@@ -103,6 +106,7 @@ func _run() -> void:
 	await e2e.shot("05-normal-result")
 	await _tap_text(result, "SHARE")
 	e2e.expect_equal("first normal result tries ad once", fake_ads.shows, 1)
+	e2e.step("isolated focus remains foreground", app.in_foreground)
 	e2e.step("reward is on disk before ad", fake_ads.persisted_before_show)
 	e2e.step("share finishes without blocking result", await e2e.wait_for(func() -> bool: return not main._sharing, 3000))
 	e2e.expect_equal("share feedback matches actual renderer", result.toast.text,
@@ -204,7 +208,8 @@ func _run() -> void:
 	e2e.end()
 	app.feedback.stop_all()
 	await e2e.unmount(main)
-	var status: int = e2e.finish({"sourceSha": OS.get_environment("GITHUB_SHA"), "locale": locale})
+	var status: int = e2e.finish({"sourceSha": OS.get_environment("GITHUB_SHA"), "locale": locale,
+		"focus": "fixed-foreground", "commitClock": "16ms-per-frame", "audio": "Dummy"})
 	print("[e2e] ALL GREEN" if status == 0 else "[e2e] FAILED")
 	quit(status)
 

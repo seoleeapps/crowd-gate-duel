@@ -32,6 +32,8 @@ var my_color: Color = Palette.MINE
 var my_flag: String = "chevron"
 ## 앱이 백그라운드로 가거나 창이 포커스를 잃으면 일시정지한다. 화면 캡처 도구만 끈다.
 var pause_when_backgrounded: bool = true
+## 시계 경계. 비어 있으면 실제 프레임 시간, 개발 여정은 고정 밀리초를 주입한다.
+var commit_clock: Callable
 
 var world: WorldView
 var band: GateBand
@@ -91,7 +93,7 @@ func _notification(what: int) -> void:
 func _process(delta: float) -> void:
 	if not _waiting_commit:
 		return
-	_ms_carry += delta * 1000.0
+	_ms_carry += float(commit_clock.call(delta)) if commit_clock.is_valid() else delta * 1000.0
 	var ms: int = int(_ms_carry)
 	_ms_carry -= float(ms)
 	var before: int = session.remaining_ms
