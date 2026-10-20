@@ -21,6 +21,8 @@ const MAX_HALF_GAP: float = 0.3
 ## 높이가 같거나 가까울 때 두 무리를 좌우로 벌리는 거리. 같은 높이를 지키려고 수평으로 벌린다.
 const LATERAL_DP: float = 40.0
 
+var bottom_clearance: float = 0.0
+var top_clearance: float = 8 * Palette.DP
 var me_view: CrowdView
 var opp_view: CrowdView
 var me_chip: CountChip
@@ -58,6 +60,7 @@ func _ready() -> void:
 	tie_chip = CountChip.new(CountChip.Kind.TIE)
 	for chip: CountChip in [opp_chip, me_chip, tie_chip]:
 		add_child(chip)
+		chip.minimum_size_changed.connect(_apply.call_deferred)
 	_fx = Node2D.new()
 	add_child(_fx)
 	resized.connect(_relayout)
@@ -259,14 +262,26 @@ func _apply() -> void:
 	if front.get_index() < back.get_index():
 		move_child(front, back.get_index())
 	var tie: bool = _show_opp and _me_count == _opp_count
-	tie_chip.visible = tie
+	tie_chip.visible = tie and is_zero_approx(bottom_clearance)
 	var me_top: Vector2 = me_view.position + Vector2(0, me_view.top_offset())
 	var opp_top: Vector2 = opp_view.position + Vector2(0, opp_view.top_offset())
 	me_chip.place_above(me_top)
 	opp_chip.place_above(opp_top)
+	_clamp_chip(me_chip)
+	_clamp_chip(opp_chip)
+	if _show_opp and me_chip.get_rect().grow(4 * Palette.DP).intersects(opp_chip.get_rect()):
+		# 가까운 두 무리의 표식은 읽는 순서대로 나란히 놓는다.
+		var gap: float = 8 * Palette.DP
+		var total: float = me_chip.size.x + opp_chip.size.x + gap
+		var left: float = clampf((me_chip.position.x + opp_chip.position.x - gap) / 2.0, 8 * Palette.DP, size.x - total - 8 * Palette.DP)
+		me_chip.position.x = left
+		opp_chip.position.x = left + me_chip.size.x + gap
 	if tie:
 		var top: float = minf(me_top.y, opp_top.y) - me_chip.size.y - 12 * Palette.DP
 		tie_chip.place_above(Vector2((me_top.x + opp_top.x) / 2.0, top))
+		_clamp_chip(tie_chip)
+		if tie_chip.get_rect().intersects(me_chip.get_rect()) or tie_chip.get_rect().intersects(opp_chip.get_rect()):
+			tie_chip.position.y = maxf(me_chip.get_rect().end.y, opp_chip.get_rect().end.y) + 8 * Palette.DP
 	_decor.queue_redraw()
 	layout_changed.emit()
 
@@ -276,6 +291,8 @@ func _place(view: CrowdView, u: float, lateral: float) -> void:
 	var dir: Vector2 = sample["dir"]
 	view.road_dir = dir
 	view.position = sample["point"] + Vector2(lateral, 12 * Palette.DP)
+	var bounds: Rect2 = view.visual_bounds()
+	view.position.x = clampf(view.position.x, -bounds.position.x + 8 * Palette.DP, size.x - bounds.end.x - 8 * Palette.DP)
 
 
 ## 길 비율 u(0 = 화면 아래 보이는 끝, 1 = 정상 바로 아래)의 점과 오르막 방향.
@@ -432,3 +449,11 @@ func _clear_fx_sprites() -> void:
 
 func _body(mine: bool) -> Color:
 	return me_view.body_color if mine else opp_view.body_color
+
+func _clamp_chip(chip: CountChip) -> void:
+	chip.position.x = clampf(chip.position.x, 8 * Palette.DP, size.x - chip.size.x - 8 * Palette.DP)
+	chip.position.y = clampf(chip.position.y, top_clearance, size.y - chip.size.y - bottom_clearance - 8 * Palette.DP)
+
+func reserve_bottom(value: float) -> void:
+	bottom_clearance = maxf(0, value)
+	_apply()

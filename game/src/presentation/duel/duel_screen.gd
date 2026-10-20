@@ -66,6 +66,7 @@ func _ready() -> void:
 	add_child(timer)
 	_captions = CaptionLayer.new()
 	add_child(_captions)
+	_captions.layout_changed.connect(_on_caption_layout)
 	_flash = ColorRect.new()
 	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_flash.color = Color(0, 0, 0, 0)
@@ -115,6 +116,7 @@ func _layout() -> void:
 	# 게이트 띠 높이는 그대로 지킨다(03 반응형 기기 매트릭스).
 	var world_top: float = ribbon_top + ribbon_h if size.y / maxf(size.x, 1.0) < 2.0 else 0.0
 	world.position = Vector2(0, world_top)
+	world.top_clearance = maxf(0, ribbon_top + ribbon_h - world_top) + 8 * dp
 	world.size = Vector2(size.x, world_bottom - world_top)
 	ribbon.position = Vector2(0, ribbon_top)
 	ribbon.size = Vector2(size.x, ribbon_h)
@@ -126,7 +128,7 @@ func _layout() -> void:
 	_pause.size = size
 	# 자막 층은 리본 아래부터. 핵심 자막이 탭을 받는 동안에도 일시정지 버튼은 눌린다.
 	_captions.position = Vector2(0, ribbon_top + ribbon_h)
-	_captions.size = Vector2(size.x, size.y - ribbon_top - ribbon_h)
+	_captions.size = Vector2(size.x, world_bottom - ribbon_top - ribbon_h)
 
 
 ## 노치·펀치홀 아래로 리본을 내린다. 화면 좌표를 이 컨트롤의 좌표로 바꿔 쓴다.
@@ -358,10 +360,16 @@ func _show_gate_lessons() -> void:
 		if not found:
 			continue
 		session.pause()
-		var example: Dictionary = GateLessons.example(kind)
-		await _captions.show_caption(example["caption"], "steal" if kind == Gate.Kind.STEAL else "shield", true, example["numbers"])
+		var example: Dictionary = GateLessons.example(session.current_gates(), kind)
+		await _captions.show_caption(tr(example["caption"]) % int(example["percent"]), "steal" if kind == Gate.Kind.STEAL else "shield", true, example["numbers"])
 		_captions.hide_caption()
 		lesson_store.mark_lesson(kind)
 		lesson_store.write()
 		if not _pause.visible:
 			session.resume()
+
+func _on_caption_layout() -> void:
+	var reserved: float = 0.0
+	if _captions.visible:
+		reserved = world.get_global_rect().end.y - _captions._card.get_global_rect().position.y + 8 * Palette.DP
+	world.reserve_bottom(reserved)

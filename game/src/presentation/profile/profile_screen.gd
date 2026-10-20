@@ -10,6 +10,7 @@ var _preview: WorldView
 var _feathers: PanelContainer
 var _toast: Label
 var _cards: Array[CosmeticCard] = []
+var _grids: Array[GridContainer] = []
 
 
 func setup(store_in: ProgressStore) -> void:
@@ -50,7 +51,8 @@ func _ready() -> void:
 	for slot: Cosmetics.Slot in [Cosmetics.Slot.FLAG, Cosmetics.Slot.PALETTE, Cosmetics.Slot.BORDER]:
 		list.add_child(ScreenKit.section_title(tr(["SLOT_FLAG", "SLOT_PALETTE", "SLOT_BORDER"][slot])))
 		var grid: GridContainer = GridContainer.new()
-		grid.columns = 3
+		grid.columns = 2
+		_grids.append(grid)
 		grid.add_theme_constant_override("h_separation", int(8 * dp))
 		grid.add_theme_constant_override("v_separation", int(8 * dp))
 		for id: String in Cosmetics.ids_in(slot):
@@ -66,7 +68,15 @@ func _ready() -> void:
 	_toast = _label("", 14, 700, Palette.INK)
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(_toast)
+	resized.connect(_fit_columns)
+	_fit_columns()
 	_refresh()
+
+
+func _fit_columns() -> void:
+	var columns: int = 3 if size.x >= (CosmeticCard.CARD_DP.x * 3 + 48) * Palette.DP else 2
+	for grid: GridContainer in _grids:
+		grid.columns = columns
 
 
 func _on_card(id: String) -> void:

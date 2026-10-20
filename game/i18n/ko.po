@@ -306,10 +306,10 @@ msgid "ONB_RETRY_AHEAD"
 msgstr "앞섰을 때는 다른 칸을 골라야 나도 늘어나요."
 
 msgid "LESSON_STEAL"
-msgstr "빼앗기는 상대 군중의 일부를 가져와요."
+msgstr "빼앗기는 상대 군중의 %d%%를 가져와요."
 
 msgid "LESSON_SHIELD"
-msgstr "방패는 상대의 빼앗기를 되돌려 보내요."
+msgstr "방패는 빼앗기를 막고 상대 군중의 %d%%를 가져와요."
 
 msgid "SET_TUTORIAL"
 msgstr "규칙 다시 배우기"
@@ -319,3 +319,6 @@ msgstr "개인정보 선택"
 
 msgid "SAVE_FAILED"
 msgstr "진행을 저장하지 못했어요, 다시 시도해 주세요."
+
+msgid "READ_POLICY"
+msgstr "개인정보처리방침 읽기"

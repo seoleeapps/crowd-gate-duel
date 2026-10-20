@@ -1,10 +1,12 @@
 extends SceneTree
 ## 실제 시작 장면과 화면 좌표 입력으로 검수한다. 사용자 저장은 열지 않는다.
+const FakeInterstitial = preload("res://tools/e2e/fakes/fake_interstitial.gd")
 const Driver = preload("res://tools/e2e/e2e_driver.gd")
 var e2e: RefCounted
 var main: Control
 var app: Node
 var out: String
+var fake_ads: InterstitialAdPort
 
 func _initialize() -> void:
 	_run.call_deferred()
@@ -29,6 +31,9 @@ func _run() -> void:
 	var locale: String = args[args.find("--locale") + 1] if args.has("--locale") else "ko"
 	app.progress.set_setting("locale", locale)
 	app.apply_settings()
+	fake_ads = FakeInterstitial.new(self, app.progress)
+	app.ads = fake_ads
+	app.ad_breaks = InterstitialGate.new(fake_ads)
 	out = args[args.find("--out") + 1] if args.has("--out") else "../build/e2e"
 	var dimensions: PackedStringArray = (args[args.find("--size") + 1] if args.has("--size") else "1080x2340").split("x")
 	e2e = Driver.new(self, Vector2i(int(dimensions[0]), int(dimensions[1])), out, args.has("--capture"))
@@ -42,6 +47,7 @@ func _run() -> void:
 	await create_timer(6.0).timeout
 	e2e.expect_equal("idle never commits", duel.session.picks_me.size(), 0)
 	e2e.step("idle never completes", not app.progress.onboarding_done())
+	_check_layout(duel)
 	await e2e.shot("01-tutorial-pick")
 	await _tutorial_until(duel, 2)
 	await e2e.unmount(main)
@@ -55,6 +61,7 @@ func _run() -> void:
 	e2e.step("quiz wrong input", await e2e.tap(duel.band.cells[1]))
 	await e2e.wait_for(func() -> bool: return duel._captions._waiting, 3000)
 	await create_timer(0.25).timeout
+	_check_layout(duel)
 	await e2e.shot("02-quiz-mistake")
 	e2e.expect_equal("wrong answer keeps checkpoint", app.progress.tutorial_step(), 4)
 	await e2e.tap(duel._captions)
@@ -69,6 +76,7 @@ func _run() -> void:
 
 	e2e.begin("normal-bot-and-restore", ["duel", "progress", "ads"])
 	var home: HomeScreen = await _screen(HomeScreen)
+	_check_layout(home)
 	await e2e.shot("04-home")
 	await _tap_text(home, "PLAY")
 	duel = await _screen(DuelScreen)
@@ -83,6 +91,7 @@ func _run() -> void:
 	await e2e.unmount(main)
 	app.progress = ProgressStore.new(path)
 	app.progress.read()
+	fake_ads.store = app.progress
 	await _mount()
 	duel = await _screen(DuelScreen)
 	e2e.expect_equal("normal picks restored", duel.session.picks_me.size(), picks)
@@ -93,6 +102,8 @@ func _run() -> void:
 	e2e.step("finished save cleared", app.progress.in_progress().is_empty())
 	await e2e.shot("05-normal-result")
 	await _tap_text(result, "SHARE")
+	e2e.expect_equal("first normal result tries ad once", fake_ads.shows, 1)
+	e2e.step("reward is on disk before ad", fake_ads.persisted_before_show)
 	e2e.step("share finishes without blocking result", await e2e.wait_for(func() -> bool: return not main._sharing, 3000))
 	e2e.expect_equal("share feedback matches actual renderer", result.toast.text,
 		TranslationServer.translate("SHARE_FAILED" if DisplayServer.get_name() == "headless" else "SHARE_SAVED"))
@@ -104,6 +115,7 @@ func _run() -> void:
 	await _tap_text(home, "HOME_PROFILE")
 	var profile: ProfileScreen = await _screen(ProfileScreen)
 	e2e.step("tutorial cosmetic unlocked", app.progress.is_unlocked(Cosmetics.ONBOARDING_REWARD))
+	_check_layout(profile)
 	await e2e.shot("06-cosmetics")
 	for card: CosmeticCard in profile._cards:
 		if card.item_id == Cosmetics.ONBOARDING_REWARD:
@@ -117,16 +129,23 @@ func _run() -> void:
 	await _tap_text(settings, "SET_SOUND")
 	e2e.step("sound setting updates runtime", app.feedback.sound_on)
 	await _tap_text(settings, "SET_SOUND")
+	fake_ads.privacy_required = true
+	fake_ads.consent_changed.emit()
+	await e2e.frames(3)
+	await _tap_text(settings, "SET_PRIVACY_OPTIONS")
+	e2e.expect_equal("privacy choices use platform boundary", fake_ads.privacy_opens, 1)
 	var feathers: int = app.progress.feathers()
 	await _tap_text(settings, "SET_TUTORIAL")
 	duel = await _screen(DuelScreen)
 	await _tutorial_until(duel, 6)
 	result = await _screen(ResultScreen)
 	e2e.expect_equal("replay cannot duplicate reward", app.progress.feathers(), feathers)
+	e2e.expect_equal("replayed tutorial never displays ad", fake_ads.shows, 1)
 	await _tap_text(result, "HOME")
 	await e2e.unmount(main)
 	app.progress = ProgressStore.new(path)
 	app.progress.read()
+	fake_ads.store = app.progress
 	await _mount()
 	e2e.step("completed restart reaches home", await _screen(HomeScreen) != null)
 	e2e.expect_equal("result persists restart", _games(), 1)
@@ -137,6 +156,7 @@ func _run() -> void:
 	# Precondition: an established band-5 player, persisted before the actual main scene is mounted.
 	app.progress.data["band"] = 5
 	app.progress.data["wins"] = 80
+	app.progress.data["feathers"] = 300
 	app.progress.write()
 	await _mount()
 	home = await _screen(HomeScreen)
@@ -148,6 +168,26 @@ func _run() -> void:
 	e2e.step("shield lesson acknowledged", app.progress.lesson_seen(Gate.Kind.SHIELD))
 	e2e.step("higher difficulty remains unlocked", app.progress.band() == 5)
 	await _tap_text(result, "HOME")
+	home = await _screen(HomeScreen)
+	await _tap_text(home, "HOME_PROFILE")
+	profile = await _screen(ProfileScreen)
+	var before_purchase: int = app.progress.feathers()
+	var target_card: CosmeticCard
+	for card: CosmeticCard in profile._cards:
+		if card.item_id == "palette_amber":
+			target_card = card
+	await e2e.tap(target_card)
+	await e2e.frames(3)
+	await _tap_text(profile, "CANCEL")
+	e2e.expect_equal("cancel unlock keeps balance", app.progress.feathers(), before_purchase)
+	await e2e.tap(target_card)
+	await e2e.frames(3)
+	await e2e.shot("unlock-confirm")
+	await _tap_text(profile, "UNLOCK")
+	e2e.expect_equal("unlock spends feathers once", app.progress.feathers(), before_purchase - Cosmetics.PRICE_PALETTE)
+	e2e.expect_equal("purchased palette equipped", app.progress.equipped(Cosmetics.Slot.PALETTE), "palette_amber")
+	await _back(profile)
+	await _screen(HomeScreen)
 	# Corrupt only the dedicated run's primary file, then let normal atomic read recover its backup.
 	await e2e.unmount(main)
 	var saved_feathers: int = int(AtomicFileStore.read(path + AtomicFileStore.BACKUP_SUFFIX)["data"].get("feathers", -1))
@@ -195,6 +235,7 @@ func _tutorial_until(duel: DuelScreen, target: int) -> void:
 				return
 			if duel.session.segment_index >= 4:
 				await create_timer(0.3).timeout
+				_check_layout(duel)
 				await e2e.shot("quiz-preview-%d" % duel.session.segment_index)
 			var index: int = Onboarding.ANSWERS[duel.session.segment_index]
 			e2e.step("tap tutorial gate", await e2e.tap(duel.band.cells[index]))
@@ -209,9 +250,11 @@ func _play_normal(duel: DuelScreen) -> void:
 			var remaining: int = duel.session.remaining_ms
 			await create_timer(0.3).timeout
 			e2e.expect_equal("special example pauses countdown", duel.session.remaining_ms, remaining)
+			_check_layout(duel)
 			await e2e.shot("lesson-%s" % ("shield" if app.progress.lesson_seen(Gate.Kind.STEAL) else "steal"))
 			await e2e.tap(duel._captions)
 		elif duel._waiting_commit:
+			_check_layout(duel)
 			await e2e.shot("normal-gate-%d" % duel.session.segment_index)
 			e2e.step("tap normal gate", await e2e.tap(duel.band.cells[1]))
 		await process_frame
@@ -240,3 +283,26 @@ func _back(screen: Control) -> void:
 
 func _games() -> int:
 	return app.progress.wins() + int(app.progress.data["losses"]) + int(app.progress.data["draws"])
+
+func _check_layout(screen: Control) -> void:
+	var bounds: Rect2 = screen.get_global_rect().grow(1)
+	for node: Node in screen.find_children("*", "BaseButton", true, false):
+		var button: BaseButton = node
+		if button.is_visible_in_tree() and button.size != Vector2.ZERO:
+			e2e.step("touch target at least 48dp", button.size.x >= 48 * Palette.DP - 1 and button.size.y >= 48 * Palette.DP - 1)
+	if screen is DuelScreen:
+		var duel: DuelScreen = screen
+		for chip: CountChip in [duel.world.me_chip, duel.world.opp_chip]:
+			e2e.step("crowd chip fits stage", bounds.encloses(chip.get_global_rect()), "stage=%s chip=%s" % [bounds, chip.get_global_rect()])
+		e2e.step("crowd chips do not overlap", not duel.world.me_chip.get_global_rect().intersects(duel.world.opp_chip.get_global_rect()))
+		if duel._captions.visible:
+			var card: Rect2 = duel._captions._card.get_global_rect()
+			e2e.step("caption fits stage", bounds.encloses(card))
+			e2e.step("caption leaves both crowd values visible", not card.intersects(duel.world.me_chip.get_global_rect()) and not card.intersects(duel.world.opp_chip.get_global_rect()))
+	elif screen is HomeScreen:
+		for button: Node in screen.find_children("*", "Button", true, false):
+			if button != screen._start:
+				e2e.step("home buttons do not overlap play", not button.get_global_rect().intersects(screen._start.get_global_rect()))
+	elif screen is ProfileScreen:
+		for card: CosmeticCard in screen._cards:
+			e2e.step("cosmetic column fits width", card.get_global_rect().position.x >= bounds.position.x and card.get_global_rect().end.x <= bounds.end.x)

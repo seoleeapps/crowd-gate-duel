@@ -1,0 +1,36 @@
+# Crowd Gate Duel Google Play 출시 기록
+
+공개 출시는 아직 완료되지 않았다. 승인 범위는 1.0.0 (첫 versionCode 1), com.seoleeapps.crowdgateduel 후보, Seolee Apps, 13세 이상, 영어와 한국어, 지원 가능한 국가 전체, 100% 공개다. 계정 소유권과 패키지는 실제 Console 등록 전에 확인한다.
+
+## 현재 확인한 범위
+
+- 원격 시작점 fecf3602b2925f6bcce2bab449d47c51f4bc7169. 사용자 작업 .serena/를 보존하고 별도 worktree에서 구현했다.
+- 필수 체험 4단계와 이해 확인 2문제, 오답 재시도, 단계 저장과 구버전 완료 보상 중복 방지, 봇 전용 대전, 전면광고 상태와 Android SDK 경계를 구현했다.
+- 코스 10,000개 검증은 전부 통과했다. 평균 재생성 2.71회, 최악 23회, 221.6초다. 이 수치는 사람 이해도와 유지율의 증거가 아니다.
+- Android 광고 및 공유 플러그인의 Java 컴파일과 lint가 통과했다. AdMob 25.5.0, UMP 4.0.0, API 36, 최소 API 24를 사용한다. AndroidX 1.17 요구사항 때문에 생성된 Android 템플릿에 AGP 8.13.2와 Gradle 8.14.3을 재현 가능하게 적용한다.
+- 디버그 APK는 생성됐으나 93MB로 기존 디버그 예산 80MB 검사에서 실패했다. 이것을 서명된 출시 AAB 또는 크기 통과로 기록하지 않는다.
+- 독립 화면 검수 1, 2회에서 발견한 문제와 원래 실패는 회차 보고서에 보존했다. 최종 회차와 CI는 실제 실행 후 별도 기록한다.
+- 한국어와 영어 개인정보처리방침은 seorilabs/seorilabs-official#82에서 배포했다. 배포 run 39453671353, SHA 8ae005ba75ae8d60b9e0abcfce59c1b59a265f77. 두 공개 URL의 HTTP 200과 제품 패키지 및 UMP 본문을 확인했다.
+
+## 외부 상태와 남은 항목
+
+Google 전용 Edge의 등록된 인증 파일로 자동 로그인을 시도했으나 provider_blocked였다. 사용자 확인용 로그인 창을 열었고 완료를 기다린다. Seolee Apps 계정의 이번 세션 소유권은 아직 실제 확인하지 못했다. 다른 계정이나 인증으로 우회하지 않는다.
+
+운영 AdMob 앱 ID와 전면광고 ID는 아직 확인되지 않았다. game/config/android.json의 운영 필드는 비어 있으며 scripts/check_release.py가 출시를 차단한다. 앱별 업로드 키도 아직 카탈로그에 없다. 공유 게시 인증은 기존 shared/google-play/publisher를 쓰되 현재 계정과 패키지 접근을 확인한 뒤에만 사용한다.
+
+이름과 패키지의 공개 검색에서 결과가 없고 현재 Play 상세 페이지는 404였다. 이것은 패키지의 예약 가능성이나 Console 소유권을 확인한 증거가 아니다. 앱 생성, 앱 광고 연결과 UMP 메시지, app-ads.txt, 실제 IARC와 데이터 안전 신고, 서명 키와 백업 및 복원 검증이 남아 있다.
+
+서명 빌드는 main에 포함된 annotated 출시 태그와 source-sha, version-name, android-version-code receipt에서만 수행한다. 공개 PR에는 비밀값이 없다. build-google-play.yml은 운영 ID, 정책과 자산, 같은 후보의 개발 근거를 먼저 검사하고 서명 키를 받는다. AAB 검사는 manifest, 앱 SDK ID, 예상 인증서, ELF 16KB와 bundle 16KB 설정을 읽는다. 실제 출시는 별도 before-release 검증을 통과한 같은 AAB로 진행한다.
+
+| 상태 | 결과 |
+|---|---|
+| 코드와 개발 검수 | 진행 중, 회차 원본 보존 |
+| 출시 서명 AAB | 미생성 |
+| Play 앱 등록과 내부 업로드 | 미실행, Google 로그인 대기 |
+| UMP, 실제 광고 표시와 닫기, Android 공유창 | 기기 승인 전 미실행 |
+| 심사 접수 | 미실행 |
+| 승인과 공개 | 미실행 |
+| 공개 스토어 버전 확인 | 미실행, 현재 404 |
+| AdMob 승인과 송출 | 미확인 |
+
+기기 접근은 후보 빌드와 개발 환경에서 확인할 수 없는 세 항목을 구체화한 뒤 별도 승인받는다. 현재 연결 기기나 설치 앱을 조회하지 않았다.

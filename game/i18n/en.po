@@ -306,10 +306,10 @@ msgid "ONB_RETRY_AHEAD"
 msgstr "Ahead? Avoid their gate so you can grow too."
 
 msgid "LESSON_STEAL"
-msgstr "Steal takes a share of the rival’s crowd."
+msgstr "Steal takes %d%% of the rival’s crowd."
 
 msgid "LESSON_SHIELD"
-msgstr "A shield sends a rival’s steal back at them."
+msgstr "Shield blocks stealing and takes %d%% back."
 
 msgid "SET_TUTORIAL"
 msgstr "Practice the rules again"
@@ -319,3 +319,6 @@ msgstr "Privacy choices"
 
 msgid "SAVE_FAILED"
 msgstr "Could not save progress; try again."
+
+msgid "READ_POLICY"
+msgstr "Read privacy policy"

@@ -18,7 +18,7 @@ func _init(port: InterstitialAdPort, clock: Callable = Time.get_ticks_msec) -> v
 	_cooldown_ms = int(profile["interstitial"]["cooldown_after_close_ms"])
 	_last_close_ms = -_cooldown_ms
 	_port.closed.connect(_finish)
-	_port.failed.connect(_finish)
+	_port.failed.connect(_fail)
 
 func try_result(duel_id: String, tutorial: bool, prepared_at_result: bool = true) -> bool:
 	if tutorial or _attempted.has(duel_id):
@@ -39,5 +39,12 @@ func _finish() -> void:
 		return
 	_active = false
 	_last_close_ms = int(_clock.call())
+	finished.emit()
+	_port.preload_ad()
+
+func _fail() -> void:
+	if not _active:
+		return
+	_active = false
 	finished.emit()
 	_port.preload_ad()

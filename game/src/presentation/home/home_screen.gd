@@ -62,13 +62,11 @@ func _ready() -> void:
 	_start.accessibility_name = tr("A11Y_START")
 	_start.add_theme_font_size_override("font_size", int(26 * dp))
 	_start.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	_start.anchor_top = 0.74
-	_start.anchor_bottom = 0.74
 	_start.custom_minimum_size = Vector2(240, 72) * dp
 	_start.offset_left = -120 * dp
 	_start.offset_right = 120 * dp
-	_start.offset_top = 18 * dp
-	_start.offset_bottom = 90 * dp
+	_start.offset_top = -184 * dp
+	_start.offset_bottom = -112 * dp
 	_start.pressed.connect(func() -> void: start_pressed.emit())
 	add_child(_start)
 
@@ -88,6 +86,14 @@ func _ready() -> void:
 		var target: Signal = pair[1]
 		button.pressed.connect(func() -> void: target.emit())
 		bottom.add_child(button)
+	var fit: Callable = func() -> void:
+		var ground_ratio: float = maxf(0.3, (size.y - 204 * dp) / maxf(size.y, 1))
+		world.anchor_bottom = ground_ratio
+		ground.anchor_top = ground_ratio
+		rule.anchor_top = ground_ratio
+		rule.anchor_bottom = ground_ratio
+	resized.connect(fit)
+	fit.call()
 	_start.grab_focus.call_deferred()
 
 

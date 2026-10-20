@@ -43,11 +43,16 @@ static func run() -> TestBase:
 	t.check(not gate.try_result("late-load", false), "미준비는 기다리지 않는다")
 	port.ready = true
 	t.check(not gate.try_result("late-load", false), "늦은 로드는 같은 판에서 표시하지 않는다")
+	port.failed.emit()
+	port.ready = true
+	t.check(gate.try_result("failure-next-round", false), "실제 표시 실패는 닫힘 간격을 새로 만들지 않는다")
+	port.failed.emit()
+	port.ready = true
 	port.rejects = true
 	t.check(not gate.try_result("show-rejected", false), "표시 거부 시 바로 진행")
 	port.rejects = false
 	t.check(gate.try_result("next", false), "다음 판은 준비된 광고 사용")
-	t.check_eq(port.shows, 3, "실제로 시작한 광고 3회")
+	t.check_eq(port.shows, 4, "실제로 시작한 광고 4회")
 	# Android 경계의 요청 번호가 잘못된 콜백과 이전 광고의 닫힘을 격리한다.
 	var android: AndroidInterstitialAdPort = AndroidInterstitialAdPort.new()
 	android.can_request = true

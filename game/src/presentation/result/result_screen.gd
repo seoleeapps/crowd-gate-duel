@@ -181,8 +181,9 @@ func _reward_line() -> Label:
 		parts.append(tr("NEW_ITEM"))
 	if parts.is_empty():
 		return null
-	var label: Label = _text(" · ".join(parts), 16, 700, Palette.INK)
+	var label: Label = _text(", ".join(parts), 16, 700, Palette.INK)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return label
 
 

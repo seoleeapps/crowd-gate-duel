@@ -12,7 +12,7 @@ import_project "$LOG_DIR/import.log"
 
 echo "[lint] 스크립트 컴파일 확인"
 set +e
-run_godot "$LOG_DIR/compile.log" --headless --path "$ROOT/game" --quit
+run_godot "$LOG_DIR/compile.log" --headless --path "$ROOT/game" --quit -- --progress-path user://e2e/lint/progress.json
 STATUS=$?
 set -e
 assert_no_godot_errors "$LOG_DIR/compile.log" || STATUS=1

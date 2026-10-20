@@ -136,6 +136,7 @@ func _show_settings() -> void:
 	screen.reset_confirmed.connect(_on_reset)
 	screen.tutorial_pressed.connect(_start_onboarding.bind(true))
 	screen.privacy_options_pressed.connect(App.ads.show_privacy_options)
+	screen.ad_port = App.ads
 	screen.privacy_required = App.ads.privacy_required
 	_swap(screen)
 
@@ -176,14 +177,14 @@ func _on_duel_finished(scene: Image, session: DuelSession) -> void:
 
 func _on_onboarding_finished(scene: Image, session: DuelSession) -> void:
 	var feathers: int = 0 if _tutorial_replay else App.progress.complete_onboarding()
-	App.progress.write()
+	var saved: bool = App.progress.write() == OK
 	var items: Array[String] = []
 	if feathers > 0:
 		items.append(Cosmetics.ONBOARDING_REWARD)
-	_show_result(session, scene, {"feathers": feathers, "items": items}, true, false)
+	_show_result(session, scene, {"feathers": feathers, "items": items}, true, saved)
 
 
-func _show_result(session: DuelSession, scene: Image, reward: Dictionary, tutorial: bool, ad_allowed: bool) -> void:
+func _show_result(session: DuelSession, scene: Image, reward: Dictionary, tutorial: bool, save_succeeded: bool) -> void:
 	App.feedback.stop_music()
 	var stinger: AudioStream = STING_WIN if session.result() == DuelEngine.RESULT_A_WIN else STING_LOSE
 	if session.result() != DuelEngine.RESULT_DRAW:
@@ -196,7 +197,9 @@ func _show_result(session: DuelSession, scene: Image, reward: Dictionary, tutori
 	result.share_pressed.connect(_on_share.bind(result, session, scene))
 	_swap(result)
 	# 결과 숫자가 먼저 그려진 뒤, 같은 결과의 준비 상태를 한 번만 확인한다.
-	if not tutorial and ad_allowed:
+	if not save_succeeded:
+		result.show_toast(tr("SAVE_FAILED"))
+	if not tutorial and save_succeeded:
 		result.set_busy(true)
 		var prepared: bool = App.ads.ready
 		await get_tree().create_timer(0.65).timeout

@@ -186,3 +186,10 @@ func _draw_flag(base: Vector2) -> void:
 	var pattern: String = "bars" if badge == Badge.BOT else flag_pattern
 	var mark: Color = Palette.BOT_MARK if badge == Badge.BOT else Palette.FLAG_MARK
 	FlagArt.draw(_flag_layer, base, Palette.DP, pattern, flag_color(), mark)
+
+## 화면 경계 계산용 시각 영역. 규칙과 군중 수에는 영향을 주지 않는다.
+func visual_bounds() -> Rect2:
+	var area: Rect2 = Rect2(Vector2.ZERO, Vector2.ZERO)
+	for point: Vector2 in _points:
+		area = area.expand(point)
+	return area.grow(24 * Palette.DP).expand(Vector2(0, top_offset()))

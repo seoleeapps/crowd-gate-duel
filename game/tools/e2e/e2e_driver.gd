@@ -99,6 +99,8 @@ func tap(control: Control) -> bool:
 	if not await scroll_into_view(control):
 		return false
 	var pos := control.get_global_rect().get_center()
+	if not Rect2(Vector2.ZERO, Vector2(viewport.size)).has_point(pos):
+		return false
 	_push_button(pos, true)
 	await frames()
 	_push_button(pos, false)
@@ -158,7 +160,7 @@ func shot(name: String) -> void:
 	if not capture:
 		return
 	await RenderingServer.frame_post_draw
-	var path := out_dir.path_join("%s.png" % name)
+	var path := out_dir.path_join("%s--%s.png" % [_current.get("id", "screen"), name])
 	viewport.get_texture().get_image().save_png(path)
 	_current.screenshots.append(path.get_file())
 
