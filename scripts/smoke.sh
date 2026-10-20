@@ -12,5 +12,5 @@ run_godot "$OUT/run.log" "${args[@]}" --path "$ROOT/game" --script res://tools/e
   --progress-path "user://e2e/${E2E_RUN_ID:-local}/progress.json" --out "$OUT" \
   --locale "${E2E_LOCALE:-ko}" --size "${E2E_SIZE:-1080x2340}" "${capture_args[@]}"
 assert_no_godot_errors "$OUT/run.log"
-rg -q '\[e2e\] ALL GREEN' "$OUT/run.log"
+grep -Fq '[e2e] ALL GREEN' "$OUT/run.log"
 python3 "$ROOT/scripts/check_e2e_coverage.py" --inventory "$ROOT/docs/qa/feature-inventory.json" --journey "$OUT/journey.json"

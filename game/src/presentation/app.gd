@@ -14,7 +14,9 @@ func _ready() -> void:
 	progress = ProgressStore.new(_progress_path())
 	progress.read()
 	ads = AndroidInterstitialAdPort.new() if OS.get_name() == "Android" else InterstitialAdPort.new()
-	ad_breaks = InterstitialGate.new(ads)
+	ad_breaks = InterstitialGate.new(ads,
+		func() -> int: return int(Time.get_unix_time_from_system() * 1000.0),
+		_progress_path() + ".ad-cooldown.json")
 	share = SharePort.new()
 	feedback = Feedback.new()
 	add_child(feedback)

@@ -63,4 +63,23 @@ static func run() -> TestBase:
 	t.check(android.ready, "현재 로드만 준비로 반영")
 	android._on_consent(false, true)
 	t.check(not android.ready and not android.can_request, "동의 변경은 준비 광고를 무효화")
+	# 앱 서비스가 다시 만들어져도 마지막 닫힘부터 같은 간격을 지킨다.
+	var cooldown_path: String = "user://tests/interstitial/cooldown.json"
+	AtomicFileStore.remove(cooldown_path)
+	var persisted_port: FakeAd = FakeAd.new()
+	persisted_port.can_request = true
+	persisted_port.ready = true
+	now[0] = 100000
+	var persisted_gate: InterstitialGate = InterstitialGate.new(persisted_port, func() -> int: return now[0], cooldown_path)
+	t.check(persisted_gate.try_result("before-restart", false), "저장 전 첫 광고 허용")
+	persisted_port.closed.emit()
+	for elapsed: int in [1000, 44999, 45000]:
+		var restored_port: FakeAd = FakeAd.new()
+		restored_port.can_request = true
+		restored_port.ready = true
+		now[0] = 100000 + elapsed
+		var restored_gate: InterstitialGate = InterstitialGate.new(restored_port, func() -> int: return now[0], cooldown_path)
+		t.check_eq(restored_gate.try_result("after-restart", false), elapsed >= 45000,
+			"재시작 후 %dms 간격" % elapsed)
+	AtomicFileStore.remove(cooldown_path)
 	return t

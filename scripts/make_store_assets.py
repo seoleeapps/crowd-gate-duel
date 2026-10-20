@@ -6,7 +6,7 @@ import json,shutil
 root=Path('.')
 assets=root/'play-store/assets';assets.mkdir(exist_ok=True)
 if not (assets/'icon-master.png').is_file():
- raise SystemExit('Rasterize game/assets/art/icon.svg to play-store/assets/icon-master.png first')
+ raise SystemExit('Rasterize play-store/assets/icon-source.svg to play-store/assets/icon-master.png first')
 shot=Image.open(root/'build/listing/en/normal-bot-and-restore--normal-gate-3.png').convert('RGB')
 frame=Image.new('RGB',(1024,500),'#f4d7b4')
 draw=ImageDraw.Draw(frame)

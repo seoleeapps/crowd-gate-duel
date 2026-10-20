@@ -19,8 +19,8 @@ source_sha="$(git rev-parse HEAD)"
 version_name="${RELEASE_TAG#v}"
 version_code="$(printf '%s\n' "$receipt" | sed -n 's/^android-version-code: //p')"
 [[ "$version_code" =~ ^[1-9][0-9]*$ ]] || { echo 'Tag receipt missing Android code'; exit 1; }
-printf '%s\n' "$receipt" | rg -qx "source-sha: $source_sha"
-printf '%s\n' "$receipt" | rg -qx "version-name: $version_name"
+printf '%s\n' "$receipt" | grep -Fxq "source-sha: $source_sha"
+printf '%s\n' "$receipt" | grep -Fxq "version-name: $version_name"
 python3 scripts/check_release.py
 export ADMOB_APP_ID
 ADMOB_APP_ID="$(python3 -c 'import json; print(json.load(open("game/config/android.json"))["admob_app_id"])')"

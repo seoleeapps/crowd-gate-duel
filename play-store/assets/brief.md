@@ -6,4 +6,4 @@ Crowd Gate Duel은 게이트를 고르고 상대 봇의 선택을 읽어 군중�
 
 현재 파일은 macOS Godot Compatibility 렌더러의 개발 화면이다. phone은 1080x1920, tablet은 1440x2560이며 7인치와 10인치 슬롯은 같은 태블릿 viewport의 원본을 쓴다. 실제 기기 촬영을 했다는 뜻은 아니다. 영어 기본 이미지와 한국어 phone-ko 이미지를 따로 보관한다.
 
-재생성은 영어와 한국어 1080x1920 여정을 build/listing/en 및 ko로, 태블릿 여정을 build/listing/tablet로 캡처한 뒤 scripts/make_store_assets.py를 실행한다. 이어 registration-assets/scripts/genimg.py와 validate.py에 play-store/assets-manifest.json을 전달한다. 아이콘 master는 기존 SVG를 sips로 PNG로 변환한 원본이다. 새로운 아트를 생성하거나 이미지 API를 호출하지 않았다.
+재생성은 영어와 한국어 1080x1920 여정을 build/listing/en 및 ko로, 태블릿 여정을 build/listing/tablet로 캡처한 뒤 scripts/make_store_assets.py를 실행한다. 이어 registration-assets/scripts/genimg.py와 validate.py에 play-store/assets-manifest.json을 전달한다. 아이콘 master는 기존 아이콘에서 배경의 둥근 모서리만 제거한 icon-source.svg를 sips로 PNG로 변환한 원본이다. 새로운 아트를 생성하거나 이미지 API를 호출하지 않았다.

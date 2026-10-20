@@ -10,13 +10,19 @@ var _attempted: Dictionary = {}
 var _active: bool = false
 var _last_close_ms: int = -45000
 var _cooldown_ms: int
+var _cooldown_path: String
 
-func _init(port: InterstitialAdPort, clock: Callable = Time.get_ticks_msec) -> void:
+## 저장 경로를 쓰면 clock은 재시작에도 이어지는 Unix 밀리초여야 한다.
+func _init(port: InterstitialAdPort, clock: Callable = Time.get_ticks_msec, cooldown_path: String = "") -> void:
 	_port = port
 	_clock = clock
+	_cooldown_path = cooldown_path
 	var profile: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://config/monetization.json"))
 	_cooldown_ms = int(profile["interstitial"]["cooldown_after_close_ms"])
 	_last_close_ms = -_cooldown_ms
+	if not _cooldown_path.is_empty():
+		var saved: Dictionary = AtomicFileStore.read(_cooldown_path)["data"]
+		_last_close_ms = int(saved.get("last_close_ms", -_cooldown_ms))
 	_port.closed.connect(_finish)
 	_port.failed.connect(_fail)
 
@@ -39,6 +45,8 @@ func _finish() -> void:
 		return
 	_active = false
 	_last_close_ms = int(_clock.call())
+	if not _cooldown_path.is_empty():
+		AtomicFileStore.write(_cooldown_path, {"last_close_ms": _last_close_ms})
 	finished.emit()
 	_port.preload_ad()
 
