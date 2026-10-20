@@ -26,7 +26,7 @@ for lang in ['en','ko']:
   items.append({'id':f'{lang}-{name}','kind':'screenshot','path':path,'width':1080,'height':1920,'source':f'build/listing/{lang}/{file}'})
 for kind in ['tablet-7','tablet-10']:
  for i,file in enumerate(['normal-bot-and-restore--04-home.png','normal-bot-and-restore--normal-gate-3.png','normal-bot-and-restore--05-normal-result.png','cosmetics-settings-and-replay--06-cosmetics.png'],1):
-  items.append({'id':f'{kind}-{i}','kind':'screenshot','path':f'screenshots/{kind}/{i:02}.png','width':1620,'height':2160,'source':f'build/layout-self/tablet/{file}'})
+  items.append({'id':f'{kind}-{i}','kind':'screenshot','path':f'screenshots/{kind}/{i:02}.png','width':1440,'height':2560,'source':f'build/listing/tablet/{file}'})
 manifest={'out_dir':'play-store','background':'#fbf7f0','brand':'Crowd Gate Duel existing native art and real rendered runtime screenshots. No generated gameplay.', 'items':items,'rules':[{'kind':'screenshot','min':3}]}
 (root/'play-store/assets-manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
 p=root/'play-store/google-play.config.json';cfg=json.loads(p.read_text());cfg['assets']['sevenInchTabletScreenshots']=[f'play-store/screenshots/tablet-7/{i:02}.png' for i in range(1,5)];cfg['assets']['tenInchTabletScreenshots']=[f'play-store/screenshots/tablet-10/{i:02}.png' for i in range(1,5)];p.write_text(json.dumps(cfg,ensure_ascii=False,indent=2)+'\n')

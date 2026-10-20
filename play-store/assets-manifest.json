@@ -72,65 +72,65 @@
       "id": "tablet-7-1",
       "kind": "screenshot",
       "path": "screenshots/tablet-7/01.png",
-      "width": 1620,
-      "height": 2160,
-      "source": "build/layout-self/tablet/normal-bot-and-restore--04-home.png"
+      "width": 1440,
+      "height": 2560,
+      "source": "build/listing/tablet/normal-bot-and-restore--04-home.png"
     },
     {
       "id": "tablet-7-2",
       "kind": "screenshot",
       "path": "screenshots/tablet-7/02.png",
-      "width": 1620,
-      "height": 2160,
-      "source": "build/layout-self/tablet/normal-bot-and-restore--normal-gate-3.png"
+      "width": 1440,
+      "height": 2560,
+      "source": "build/listing/tablet/normal-bot-and-restore--normal-gate-3.png"
     },
     {
       "id": "tablet-7-3",
       "kind": "screenshot",
       "path": "screenshots/tablet-7/03.png",
-      "width": 1620,
-      "height": 2160,
-      "source": "build/layout-self/tablet/normal-bot-and-restore--05-normal-result.png"
+      "width": 1440,
+      "height": 2560,
+      "source": "build/listing/tablet/normal-bot-and-restore--05-normal-result.png"
     },
     {
       "id": "tablet-7-4",
       "kind": "screenshot",
       "path": "screenshots/tablet-7/04.png",
-      "width": 1620,
-      "height": 2160,
-      "source": "build/layout-self/tablet/cosmetics-settings-and-replay--06-cosmetics.png"
+      "width": 1440,
+      "height": 2560,
+      "source": "build/listing/tablet/cosmetics-settings-and-replay--06-cosmetics.png"
     },
     {
       "id": "tablet-10-1",
       "kind": "screenshot",
       "path": "screenshots/tablet-10/01.png",
-      "width": 1620,
-      "height": 2160,
-      "source": "build/layout-self/tablet/normal-bot-and-restore--04-home.png"
+      "width": 1440,
+      "height": 2560,
+      "source": "build/listing/tablet/normal-bot-and-restore--04-home.png"
     },
     {
       "id": "tablet-10-2",
       "kind": "screenshot",
       "path": "screenshots/tablet-10/02.png",
-      "width": 1620,
-      "height": 2160,
-      "source": "build/layout-self/tablet/normal-bot-and-restore--normal-gate-3.png"
+      "width": 1440,
+      "height": 2560,
+      "source": "build/listing/tablet/normal-bot-and-restore--normal-gate-3.png"
     },
     {
       "id": "tablet-10-3",
       "kind": "screenshot",
       "path": "screenshots/tablet-10/03.png",
-      "width": 1620,
-      "height": 2160,
-      "source": "build/layout-self/tablet/normal-bot-and-restore--05-normal-result.png"
+      "width": 1440,
+      "height": 2560,
+      "source": "build/listing/tablet/normal-bot-and-restore--05-normal-result.png"
     },
     {
       "id": "tablet-10-4",
       "kind": "screenshot",
       "path": "screenshots/tablet-10/04.png",
-      "width": 1620,
-      "height": 2160,
-      "source": "build/layout-self/tablet/cosmetics-settings-and-replay--06-cosmetics.png"
+      "width": 1440,
+      "height": 2560,
+      "source": "build/listing/tablet/cosmetics-settings-and-replay--06-cosmetics.png"
     }
   ],
   "rules": [
