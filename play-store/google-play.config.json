@@ -29,8 +29,18 @@
       "play-store/screenshots/phone/02-duel.png",
       "play-store/screenshots/phone/03-result.png"
     ],
-    "sevenInchTabletScreenshots": [],
-    "tenInchTabletScreenshots": []
+    "sevenInchTabletScreenshots": [
+      "play-store/screenshots/tablet-7/01.png",
+      "play-store/screenshots/tablet-7/02.png",
+      "play-store/screenshots/tablet-7/03.png",
+      "play-store/screenshots/tablet-7/04.png"
+    ],
+    "tenInchTabletScreenshots": [
+      "play-store/screenshots/tablet-10/01.png",
+      "play-store/screenshots/tablet-10/02.png",
+      "play-store/screenshots/tablet-10/03.png",
+      "play-store/screenshots/tablet-10/04.png"
+    ]
   },
   "contentDeclarations": {
     "dataSafety": "확정 필요: 실제 광고 SDK 처리에 맞춰 Console 신고",

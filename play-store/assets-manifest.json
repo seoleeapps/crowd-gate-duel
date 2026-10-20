@@ -1,0 +1,142 @@
+{
+  "out_dir": "play-store",
+  "background": "#fbf7f0",
+  "brand": "Crowd Gate Duel existing native art and real rendered runtime screenshots. No generated gameplay.",
+  "items": [
+    {
+      "id": "icon",
+      "kind": "icon",
+      "path": "assets/icon-512.png",
+      "width": 512,
+      "height": 512,
+      "source": "play-store/assets/icon-master.png",
+      "fit": "contain"
+    },
+    {
+      "id": "feature",
+      "kind": "feature",
+      "path": "assets/feature-graphic-1024x500.png",
+      "width": 1024,
+      "height": 500,
+      "source": "play-store/assets/feature-master.png"
+    },
+    {
+      "id": "en-01-tutorial",
+      "kind": "screenshot",
+      "path": "screenshots/phone/01-tutorial.png",
+      "width": 1080,
+      "height": 1920,
+      "source": "build/listing/en/mandatory-tutorial--quiz-preview-4.png"
+    },
+    {
+      "id": "en-02-duel",
+      "kind": "screenshot",
+      "path": "screenshots/phone/02-duel.png",
+      "width": 1080,
+      "height": 1920,
+      "source": "build/listing/en/normal-bot-and-restore--normal-gate-3.png"
+    },
+    {
+      "id": "en-03-result",
+      "kind": "screenshot",
+      "path": "screenshots/phone/03-result.png",
+      "width": 1080,
+      "height": 1920,
+      "source": "build/listing/en/normal-bot-and-restore--05-normal-result.png"
+    },
+    {
+      "id": "ko-01-tutorial",
+      "kind": "screenshot",
+      "path": "screenshots/phone-ko/01-tutorial.png",
+      "width": 1080,
+      "height": 1920,
+      "source": "build/listing/ko/mandatory-tutorial--quiz-preview-4.png"
+    },
+    {
+      "id": "ko-02-duel",
+      "kind": "screenshot",
+      "path": "screenshots/phone-ko/02-duel.png",
+      "width": 1080,
+      "height": 1920,
+      "source": "build/listing/ko/normal-bot-and-restore--normal-gate-3.png"
+    },
+    {
+      "id": "ko-03-result",
+      "kind": "screenshot",
+      "path": "screenshots/phone-ko/03-result.png",
+      "width": 1080,
+      "height": 1920,
+      "source": "build/listing/ko/normal-bot-and-restore--05-normal-result.png"
+    },
+    {
+      "id": "tablet-7-1",
+      "kind": "screenshot",
+      "path": "screenshots/tablet-7/01.png",
+      "width": 1620,
+      "height": 2160,
+      "source": "build/layout-self/tablet/normal-bot-and-restore--04-home.png"
+    },
+    {
+      "id": "tablet-7-2",
+      "kind": "screenshot",
+      "path": "screenshots/tablet-7/02.png",
+      "width": 1620,
+      "height": 2160,
+      "source": "build/layout-self/tablet/normal-bot-and-restore--normal-gate-3.png"
+    },
+    {
+      "id": "tablet-7-3",
+      "kind": "screenshot",
+      "path": "screenshots/tablet-7/03.png",
+      "width": 1620,
+      "height": 2160,
+      "source": "build/layout-self/tablet/normal-bot-and-restore--05-normal-result.png"
+    },
+    {
+      "id": "tablet-7-4",
+      "kind": "screenshot",
+      "path": "screenshots/tablet-7/04.png",
+      "width": 1620,
+      "height": 2160,
+      "source": "build/layout-self/tablet/cosmetics-settings-and-replay--06-cosmetics.png"
+    },
+    {
+      "id": "tablet-10-1",
+      "kind": "screenshot",
+      "path": "screenshots/tablet-10/01.png",
+      "width": 1620,
+      "height": 2160,
+      "source": "build/layout-self/tablet/normal-bot-and-restore--04-home.png"
+    },
+    {
+      "id": "tablet-10-2",
+      "kind": "screenshot",
+      "path": "screenshots/tablet-10/02.png",
+      "width": 1620,
+      "height": 2160,
+      "source": "build/layout-self/tablet/normal-bot-and-restore--normal-gate-3.png"
+    },
+    {
+      "id": "tablet-10-3",
+      "kind": "screenshot",
+      "path": "screenshots/tablet-10/03.png",
+      "width": 1620,
+      "height": 2160,
+      "source": "build/layout-self/tablet/normal-bot-and-restore--05-normal-result.png"
+    },
+    {
+      "id": "tablet-10-4",
+      "kind": "screenshot",
+      "path": "screenshots/tablet-10/04.png",
+      "width": 1620,
+      "height": 2160,
+      "source": "build/layout-self/tablet/cosmetics-settings-and-replay--06-cosmetics.png"
+    }
+  ],
+  "rules": [
+    {
+      "kind": "screenshot",
+      "min": 3
+    }
+  ]
+}
