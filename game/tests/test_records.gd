@@ -1,7 +1,6 @@
 class_name TestRecords
 extends RefCounted
-## 상대 기록 경로. AC-005 재생 일치, AC-006 판당 원격 읽기 1건·쓰기 1건,
-## AC-007 오프라인 봇 폴백과 재연결 시 1건 업로드, 그리고 봇 위장 금지(DEC-003).
+## 로컬 선택 기록의 형식과 AC-005 재생 일치 검증.
 
 const STORE_PATH: String = "user://test_records_progress.json"
 
@@ -63,7 +62,7 @@ static func _test_record_rejects_bad_input(t: TestBase) -> void:
 
 
 static func _test_replay_matches_original(t: TestBase) -> void:
-	# AC-005. 원격을 거친 기록으로 대국하면 상대의 구간별 선택과 군중 궤적이 원본과 같아야 한다.
+	# AC-005. 직렬화한 기록의 구간별 선택과 군중 궤적이 원본과 같아야 한다.
 	var mismatches: int = 0
 	for i: int in range(20):
 		var original: DuelSession = _recorded_duel("replay-src-%d" % i, 1 + i % 5, "p%d" % i)

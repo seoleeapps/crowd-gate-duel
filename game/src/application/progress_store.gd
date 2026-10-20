@@ -84,6 +84,11 @@ func read() -> void:
 	data["settings"] = settings
 	for obsolete: String in ["pending_upload", "pending_clear", "ad_retry_date", "ad_retry_count"]:
 		data.erase(obsolete)
+	# 원격 기록 대국은 새 봇으로 바꾸어 이어도 같은 판이 되지 않는다.
+	# 미완료 대국만 비우고 전적, 재화와 로컬 재생 규약은 보존한다.
+	var pending_session: Dictionary = data["in_progress"].get("session", {})
+	if str(pending_session.get("opponent", {}).get("kind", "")) == "record":
+		data["in_progress"] = {}
 	data["schema_version"] = SCHEMA_VERSION
 
 

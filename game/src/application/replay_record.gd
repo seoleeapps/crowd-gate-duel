@@ -1,6 +1,6 @@
 class_name ReplayRecord
 extends RefCounted
-## 상대 기록 1건. 원격 문서 `replays/{userId}` 의 내용과 같다(06 데이터 계약).
+## 로컬 선택 기록 1건. 기존 선택 시퀀스의 재생 규약을 유지한다.
 ##
 ## **결과 수치를 담지 않는다(DEC-009).** 최종 군중 수와 승패는 재생할 때 규칙이 다시 계산한다.
 ## 결과를 담으면 조작 경로가 생기고, 규칙 버전이 바뀌었을 때 원본과 재생이 어긋난다.
@@ -16,7 +16,7 @@ var band: int = 1
 var course_seed: String = ""
 var picks: Array[int] = []
 var created_at: int = 0  ## 유닉스 초
-## 확약 시간 연장(접근성, DEC-008)을 켜고 둔 기록인지. 대역 매칭에 반영한다. 판정에는 영향이 없다.
+## 확약 시간 연장(접근성, DEC-008)을 켜고 둔 기록인지. 판정에는 영향이 없다.
 var commit_extended: bool = false
 
 
@@ -46,7 +46,7 @@ func to_dict() -> Dictionary:
 	}
 
 
-## 원격에서 온 문서는 신뢰하지 않는다. 형식이 하나라도 어긋나면 null 을 돌려주고 호출자는 봇으로 대체한다.
+## 직렬화한 기록은 형식을 검사한다. 어긋나면 null을 돌려주고 재생을 거부한다.
 ## 이 클라이언트가 모르는 규칙 버전도 재생할 수 없으므로 거부한다.
 static func from_dict(data: Dictionary) -> ReplayRecord:
 	if data.is_empty():
