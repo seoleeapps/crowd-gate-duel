@@ -69,8 +69,9 @@ public final class CrowdGatePlatform extends GodotPlugin {
         if (initialized) { event("consent_updated", true, required); return; }
         if (initializing) return;
         initializing = true;
+        // 대상 연령 13+와 별개로 지역별 IARC 콘텐츠 등급(한국 전체이용가)에 맞춘다.
         MobileAds.setRequestConfiguration(new RequestConfiguration.Builder()
-            .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_T).build());
+            .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G).build());
         MobileAds.initialize(getActivity(), state -> onUi(() -> {
             initialized = true;
             initializing = false;
