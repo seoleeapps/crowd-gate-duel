@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 2,
+  "e2e": {
+    "workflow": ".github/workflows/godot-compile.yml",
+    "command": "scripts/smoke.sh"
+  },
+  "features": [
+    {
+      "id": "tutorial",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "game/src/application/onboarding.gd"
+      ]
+    },
+    {
+      "id": "duel",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "game/src/application/duel_session.gd"
+      ]
+    },
+    {
+      "id": "progress",
+      "core": true,
+      "foundation": true,
+      "paths": [
+        "game/src/application/progress_store.gd"
+      ]
+    },
+    {
+      "id": "cosmetics",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "game/src/presentation/profile/**"
+      ]
+    },
+    {
+      "id": "settings",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "game/src/presentation/settings/**"
+      ]
+    },
+    {
+      "id": "ads",
+      "core": true,
+      "foundation": true,
+      "paths": [
+        "game/src/application/interstitial_gate.gd"
+      ],
+      "platformPaths": [
+        "game/src/infrastructure/ports/android_interstitial_ad_port.gd",
+        "native/android/**",
+        "game/export_presets.cfg"
+      ]
+    },
+    {
+      "id": "share",
+      "core": true,
+      "foundation": true,
+      "paths": [
+        "game/src/infrastructure/ports/share_port.gd"
+      ],
+      "platformPaths": [
+        "game/src/infrastructure/ports/share_port.gd",
+        "native/android/**"
+      ]
+    }
+  ]
+}

@@ -61,19 +61,13 @@ msgid "HOME"
 msgstr "Home"
 
 msgid "SHARE_SAVED"
-msgstr "Result card saved"
+msgstr "Result card ready to share"
 
 msgid "SHARE_FAILED"
-msgstr "Could not save the card"
+msgstr "Could not share the card"
 
-msgid "AD_RETRY"
-msgstr "Watch an ad to retry"
 
-msgid "AD_RETRY_NOTICE"
-msgstr "Watch the whole ad to replay this same course once. Skip it and there is no retry."
 
-msgid "AD_RETRY_LEFT"
-msgstr "%d left today"
 
 msgid "DECISIVE"
 msgstr "Turning point · segment %d"
@@ -87,8 +81,6 @@ msgstr "First win today"
 msgid "BAND_UP"
 msgstr "Band %d unlocked"
 
-msgid "OFFLINE"
-msgstr "Offline · you will face a bot"
 
 msgid "PAUSED"
 msgstr "Paused"
@@ -175,7 +167,7 @@ msgid "SET_COMMIT_EXT"
 msgstr "Longer pick time (×1.5)"
 
 msgid "SET_COMMIT_EXT_DESC"
-msgstr "You will be matched with records made with the same setting."
+msgstr "Gives you 50% more time to choose a gate."
 
 msgid "SET_VIBRATION"
 msgstr "Vibration"
@@ -217,7 +209,7 @@ msgid "SET_PRIVACY"
 msgstr "Privacy"
 
 msgid "PRIVACY_TEXT"
-msgstr "We do not collect your name, contact details or location. Your latest match is kept as one record of the gates you picked, so other players can face it. Resetting progress deletes that record too."
+msgstr "Progress stays on this device; no account is needed. Google AdMob and UMP process advertising and consent data. Read the privacy policy for details."
 
 msgid "ITEM_FLAG_CHEVRON"
 msgstr "Chevron flag"
@@ -271,7 +263,7 @@ msgid "ITEM_BORDER_BUNTING"
 msgstr "Bunting"
 
 msgid "ONB_PICK"
-msgstr "Pick a gate to grow"
+msgstr "Tap +4 to grow your crowd."
 
 msgid "ONB_DIFFERENT"
 msgstr "Different gates: both grow"
@@ -282,8 +274,51 @@ msgstr "Same gate: fewer goes first"
 msgid "ONB_BLOCKED"
 msgstr "Ahead? A shared gate blocks you"
 
-msgid "ONB_AIM"
-msgstr "Behind? Take the gate they want"
 
 msgid "TAP_CONTINUE"
 msgstr "Tap to continue"
+
+msgid "ONB_GREW"
+msgstr "Your chosen gate grew your crowd."
+
+msgid "ONB_TWO"
+msgstr "Choose your gate; the rival chooses ×1.5."
+
+msgid "ONB_BEHIND"
+msgstr "You are behind; choose the same gate."
+
+msgid "ONB_AHEAD"
+msgstr "You are ahead; try the same gate again."
+
+msgid "ONB_CHECK_BEHIND"
+msgstr "You are behind; the rival picks ×1.5."
+
+msgid "ONB_CHECK_AHEAD"
+msgstr "You are ahead; the rival picks +20."
+
+msgid "ONB_CHECK_OK"
+msgstr "You read the rival’s choice correctly."
+
+msgid "ONB_RETRY_BEHIND"
+msgstr "Behind? Share their gate to take its full effect."
+
+msgid "ONB_RETRY_AHEAD"
+msgstr "Ahead? Avoid their gate so you can grow too."
+
+msgid "LESSON_STEAL"
+msgstr "Steal takes %d%% of the rival’s crowd."
+
+msgid "LESSON_SHIELD"
+msgstr "Shield blocks stealing and takes %d%% back."
+
+msgid "SET_TUTORIAL"
+msgstr "Practice the rules again"
+
+msgid "SET_PRIVACY_OPTIONS"
+msgstr "Privacy choices"
+
+msgid "SAVE_FAILED"
+msgstr "Could not save progress; try again."
+
+msgid "READ_POLICY"
+msgstr "Read privacy policy"

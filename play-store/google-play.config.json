@@ -1,0 +1,59 @@
+{
+  "packageName": "com.seoleeapps.crowdgateduel",
+  "defaultLanguage": "en-US",
+  "appType": "game",
+  "freeOrPaid": "free",
+  "contactEmail": "cs@seorilabs.com",
+  "contactPhone": "+821050675746",
+  "contactWebsite": "https://www.seorilabs.com/support/",
+  "privacyPolicyUrl": "https://www.seorilabs.com/apps/crowd-gate-duel/privacy/",
+  "storeListing": {
+    "appName": {
+      "en-US": "Crowd Gate Duel",
+      "ko-KR": "갈림길 군중 대전"
+    },
+    "shortDescription": {
+      "en-US": "Read the bot, pick a gate, and grow your crowd in a quick offline duel.",
+      "ko-KR": "봇의 선택을 읽고 게이트를 골라 군중을 키우는 짧은 오프라인 대결"
+    },
+    "fullDescription": {
+      "en-US": "One hill, two crowds, and a choice at every gate.\n\nGrow your crowd with addition and multiplication gates, then use stealing and shields as new gates appear. Both sides choose at the same time. If you choose the same gate, the smaller crowd receives its full effect. When you are ahead, finding a different route can keep you growing.\n\nLearn by playing a required, untimed practice duel. Try both sides of the shared-gate rule and answer two situations before starting normal matches. A wrong answer lets you try that situation again.\n\nPlay against clearly labeled on-device bots with no account or internet connection required for gameplay. Win matches to unlock higher difficulty and earn feathers for flags, colors and result-card borders. Cosmetics do not change match strength.\n\nProgress stays on your device. Adjust sound, music, vibration, color assistance, screen shake and the time allowed to choose. Replay the tutorial from Settings and share a result card through Android sharing.\n\nFree to play with interstitial ads between normal matches. Ads require connectivity and may be unavailable depending on consent and availability. There are no in-app purchases.",
+      "ko-KR": "하나의 언덕길, 두 군중, 게이트마다 달라지는 선택.\n\n모으기와 불리기 게이트로 군중을 키우고, 새로 등장하는 빼앗기와 방패를 활용하세요. 양쪽은 동시에 고릅니다. 같은 칸을 고르면 군중이 적은 쪽이 효과를 온전히 받아요. 내가 앞섰을 때는 다른 길을 골라야 계속 늘어날 수 있어요.\n\n시간제한 없는 필수 체험에서 직접 배워요. 뒤처졌을 때와 앞섰을 때의 겹침을 경험하고, 두 상황을 풀면 일반 대국을 시작할 수 있어요. 틀려도 해당 문제만 다시 시도해요.\n\n일반 상대는 봇이라고 표시되는 기기 내 봇입니다. 계정과 인터넷 없이 게임을 즐길 수 있어요. 승리로 높은 난이도를 열고 깃털을 모아 깃발, 색상과 결과 카드 테두리를 해금하세요. 꾸미기는 승패에 영향을 주지 않아요.\n\n진행은 이 기기에 저장돼요. 소리, 음악, 진동, 색각 보조, 화면 흔들림과 고르는 시간을 설정할 수 있어요. 설정에서 튜토리얼을 다시 보고 Android 공유창으로 결과 카드를 공유하세요.\n\n무료 게임이며 일반 대국 사이에 전면광고가 표시될 수 있어요. 광고는 연결과 동의 상태, 제공 여부에 따라 이용할 수 있습니다. 인앱결제는 없어요."
+    }
+  },
+  "assets": {
+    "playIcon": "play-store/assets/icon-512.png",
+    "featureGraphic": "play-store/assets/feature-graphic-1024x500.png",
+    "phoneScreenshots": [
+      "play-store/screenshots/phone/01-tutorial.png",
+      "play-store/screenshots/phone/02-duel.png",
+      "play-store/screenshots/phone/03-result.png"
+    ],
+    "sevenInchTabletScreenshots": [
+      "play-store/screenshots/tablet-7/01.png",
+      "play-store/screenshots/tablet-7/02.png",
+      "play-store/screenshots/tablet-7/03.png",
+      "play-store/screenshots/tablet-7/04.png"
+    ],
+    "tenInchTabletScreenshots": [
+      "play-store/screenshots/tablet-10/01.png",
+      "play-store/screenshots/tablet-10/02.png",
+      "play-store/screenshots/tablet-10/03.png",
+      "play-store/screenshots/tablet-10/04.png"
+    ]
+  },
+  "contentDeclarations": {
+    "dataSafety": "확정 필요: 실제 광고 SDK 처리에 맞춰 Console 신고",
+    "contentRating": "확정 필요: IARC 설문과 지역별 등급",
+    "targetAudience": "general-audience-not-children; ages 13 and above",
+    "ads": "yes",
+    "koreaDistribution": "yes",
+    "koreaGameRating": "확정 필요: IARC 및 한국 배포 요건 확인"
+  },
+  "release": {
+    "releaseNotes": {
+      "en-US": "Play quick offline bot duels, learn the shared-gate rule by doing, and unlock crowd cosmetics.",
+      "ko-KR": "필수 체험으로 겹침 규칙을 배우고, 오프라인 봇과 대결하며 꾸미기를 해금하세요."
+    }
+  }
+}

@@ -10,6 +10,8 @@ const VERTICAL: Vector2i = Vector2i(1080, 1920)
 ## 카드를 한 번 그려 이미지로 돌려준다. 호출자는 트리에 붙인 뒤 await 한다.
 ## border 는 꾸미기 카드 테두리 값("", ink, stripes, bunting)이다.
 static func render(parent: Node, card_size: Vector2i, scene: Image, me: int, opp: int, result_color: Color, border: String = "") -> Image:
+	if DisplayServer.get_name() == "headless":
+		return null
 	var card: ShareCard = ShareCard.new()
 	card.size = card_size
 	card.render_target_update_mode = SubViewport.UPDATE_ONCE
@@ -36,7 +38,7 @@ func _build(scene: Image, me: int, opp: int, result_color: Color, border: String
 	if scene != null and not scene.is_empty():
 		picture.texture = ImageTexture.create_from_image(ResultScreen.scene_crop(scene))
 	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	picture.size = Vector2(root.size.x, root.size.y - 150 * dp)
 	root.add_child(picture)
 	var strip: ColorRect = ColorRect.new()

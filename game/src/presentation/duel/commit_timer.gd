@@ -21,7 +21,7 @@ func set_time(remaining_ms: int, total_ms: int) -> void:
 	ratio = clampf(float(remaining_ms) / float(maxi(total_ms, 1)), 0.0, 1.0)
 	seconds_left = float(remaining_ms) / 1000.0
 	var warn: bool = remaining_ms > 0 and remaining_ms <= 1000
-	_label.text = "%.1f" % seconds_left
+	_label.text = "∞" if total_ms <= 0 else "%.1f" % seconds_left
 	_label.add_theme_font_size_override("font_size", int((24 if warn else 20) * Palette.DP))
 	_label.size = Vector2(56, size.y / Palette.DP) * Palette.DP
 	_label.position = Vector2(size.x - _label.size.x - 16 * Palette.DP, (size.y - _label.get_minimum_size().y) / 2.0)

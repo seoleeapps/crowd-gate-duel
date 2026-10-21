@@ -111,6 +111,9 @@ func reveal(marks: Array[Dictionary]) -> Tween:
 	tween.tween_property(self, "scale:x", 0.0, 0.12)
 	tween.tween_callback(func() -> void:
 		modulate = Color.WHITE if not marks.is_empty() or _locked_by_me else Color(1, 1, 1, 0.35)
+		for child: Node in _markers.get_children():
+			_markers.remove_child(child)
+			child.queue_free()
 		for mark: Dictionary in marks:
 			_markers.add_child(_marker(mark))
 		_markers.reset_size()

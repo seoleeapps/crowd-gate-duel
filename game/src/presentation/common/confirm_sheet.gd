@@ -26,8 +26,8 @@ func _ready() -> void:
 	box.set_border_width_all(int(2 * dp))
 	box.set_content_margin_all(22 * dp)
 	panel.add_theme_stylebox_override("panel", box)
-	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	panel.custom_minimum_size.x = 300 * dp
+	var panel_width: float = minf(300 * dp, size.x - 16 * dp)
+	panel.custom_minimum_size.x = panel_width
 	add_child(panel)
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", int(18 * dp))
@@ -35,11 +35,11 @@ func _ready() -> void:
 	var text: Label = Label.new()
 	text.text = _message
 	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text.custom_minimum_size.x = 256 * dp
+	text.custom_minimum_size.x = panel_width - 44 * dp
 	text.add_theme_font_override("font", UiTheme.text_font(500))
 	text.add_theme_font_size_override("font_size", int(16 * dp))
 	column.add_child(text)
-	var row: HBoxContainer = HBoxContainer.new()
+	var row: VBoxContainer = VBoxContainer.new()
 	row.add_theme_constant_override("separation", int(10 * dp))
 	column.add_child(row)
 	var close: Button = Button.new()
@@ -62,7 +62,12 @@ func _ready() -> void:
 		)
 		row.add_child(ok)
 	close.grab_focus.call_deferred()
-	resized.connect(func() -> void: panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER))
+	var center: Callable = func() -> void:
+		panel.reset_size()
+		panel.position = (size - panel.size) / 2.0
+	resized.connect(center.call_deferred)
+	panel.minimum_size_changed.connect(center.call_deferred)
+	center.call_deferred()
 
 
 func _close() -> void:

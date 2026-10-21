@@ -147,7 +147,7 @@ static func _test_onboarding_script(t: TestBase) -> void:
 	t.check(int(steps[3]["me"]) < int(steps[3]["opp"]), "4구간 뒤 다시 내가 뒤처진다")
 
 	# 5구간: 뒤처진 내가 상대가 고를 칸을 노려야만 이긴다.
-	for pick: int in range(3):
+	for pick: int in range(2):
 		var run: DuelSession = Onboarding.session()
 		for i: int in range(4):
 			run.present_next()
@@ -157,12 +157,18 @@ static func _test_onboarding_script(t: TestBase) -> void:
 		var expect_win: bool = pick == Onboarding.OPPONENT_PICKS[4]
 		t.check_eq(run.result() == DuelEngine.RESULT_A_WIN, expect_win, "5구간 %d번 칸 선택의 승패" % pick)
 
-	# 아무것도 누르지 않아도 같은 사건이 일어나고, 5구간 자동 선택은 이기는 칸이다.
 	var idle: DuelSession = Onboarding.session()
-	var idle_steps: Array[Dictionary] = []
-	while idle.present_next():
-		idle_steps.append(idle.tick(Onboarding.COMMIT_MS))
-	t.check((idle_steps[2]["events"] as Array).has("yield_to_a"), "시간이 다 돼도 3구간 양보 사건")
-	t.check((idle_steps[3]["events"] as Array).has("yield_to_b"), "시간이 다 돼도 4구간 막힘 사건")
-	t.check_eq(idle.result(), DuelEngine.RESULT_A_WIN, "자동 선택만으로도 온보딩은 이긴다")
-	t.check_eq(Onboarding.CAPTIONS.size(), Onboarding.course().segment_count(), "구간마다 자막 설정이 있다")
+	idle.present_next()
+	t.check(idle.tick(600000).is_empty(), "튜토리얼 무입력은 대기")
+	t.check_eq(idle.picks_me.size(), 0, "무입력 선택 기록 없음")
+	for index: int in [4, 5]:
+		var quiz: DuelSession = Onboarding.session(index)
+		quiz.present_next()
+		var before: Array[int] = [quiz.crowd_me, quiz.crowd_opp]
+		var wrong: Dictionary = quiz.commit(1 - Onboarding.ANSWERS[index])
+		t.check(not Onboarding.accepted(wrong), "이해 확인 %d 오답" % index)
+		Onboarding.retry(quiz)
+		t.check_eq([quiz.crowd_me, quiz.crowd_opp] as Array[int], before, "오답 문제만 되돌림")
+		quiz.present_next()
+		t.check(Onboarding.accepted(quiz.commit(Onboarding.ANSWERS[index])), "같은 문제 재시도 정답")
+	t.check_eq(Onboarding.CAPTIONS.size(), Onboarding.course().segment_count(), "단계마다 한 문장")

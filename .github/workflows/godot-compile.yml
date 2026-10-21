@@ -19,8 +19,8 @@ concurrency:
 jobs:
   compile:
     name: Godot Compile
-    runs-on: seorilabs-x64
-    timeout-minutes: 25
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -98,74 +98,36 @@ jobs:
           echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
           "${HOME}/.local/bin/godot" --version
 
-      - name: Compile And Test
+      - name: Compile, tests, courses and coordinate input
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p build/qa
+          scripts/lint.sh 2>&1 | tee build/qa/compile.log
+          scripts/test.sh 2>&1 | tee build/qa/tests.log
+          scripts/validate_courses.sh --seeds 10000 2>&1 | tee build/qa/courses.log
+          scripts/smoke.sh
 
-          # Godot 헤드리스는 스크립트 오류가 있어도 종료 코드 0 을 낼 수 있다.
-          # 종료 코드와 로그를 함께 검사한다.
-          run_godot_check() {
-            local label="$1"
-            shift
-            local log_file="${RUNNER_TEMP}/godot-${label}.log"
-            local timeout_seconds="${GODOT_COMMAND_TIMEOUT_SECONDS:-600}"
+      - name: Render English and Korean screens
+        shell: bash
+        run: |
+          set -euo pipefail
+          for spec in ko:1080x2340 en:1080x1620 ko:1080x2520 en:1620x2160; do
+            locale="${spec%%:*}"
+            size="${spec#*:}"
+            E2E_CAPTURE=1 E2E_LOCALE="$locale" E2E_SIZE="$size" \
+              E2E_RUN_ID="$locale-$size" E2E_OUT="$PWD/build/rendered/$locale-$size" \
+              xvfb-run -a scripts/smoke.sh
+          done
 
-            timeout --kill-after=10s "${timeout_seconds}s" "$@" 2>&1 | tee "${log_file}"
-            local godot_status="${PIPESTATUS[0]}"
-
-            if [ "${godot_status}" -eq 124 ] || [ "${godot_status}" -eq 137 ]; then
-              echo "Godot timed out during ${label} after ${timeout_seconds}s." >&2
-              exit 1
-            fi
-
-            if [ "${godot_status}" -ne 0 ]; then
-              exit "${godot_status}"
-            fi
-
-            if grep -E "^(SCRIPT ERROR|ERROR):" "${log_file}"; then
-              echo "Godot reported errors during ${label}." >&2
-              exit 1
-            fi
-          }
-
-          # 클린 러너에는 .godot/imported 와 전역 스크립트 클래스 캐시가 없다.
-          # 임포트를 먼저 돌리지 않으면 class_name 해석이 연쇄로 깨진다.
-          run_godot_check import godot --headless --path "$PROJECT_DIR" --import --quit
-          run_godot_check compile godot --headless --path "$PROJECT_DIR" --quit
-
-          test_log="${RUNNER_TEMP}/godot-tests.log"
-          timeout --kill-after=10s "${GODOT_COMMAND_TIMEOUT_SECONDS:-600}s" \
-            godot --headless --path "$PROJECT_DIR" --script res://tests/run_all.gd 2>&1 | tee "${test_log}"
-          test_status="${PIPESTATUS[0]}"
-          if [ "${test_status}" -ne 0 ]; then
-            echo "Test runner exited with ${test_status}." >&2
-            exit "${test_status}"
-          fi
-          if ! grep -q "\[run_all\] ALL GREEN" "${test_log}"; then
-            echo "Test suite did not report ALL GREEN." >&2
-            exit 1
-          fi
-          if grep -E "^(SCRIPT ERROR|ERROR):" "${test_log}"; then
-            echo "Godot reported errors during tests." >&2
-            exit 1
-          fi
-
-          # 앱 흐름 스모크: 온보딩 → 결과 → 홈 → 대국 → 결과. 사용자 저장과 분리된 경로를 쓴다.
-          smoke_log="${RUNNER_TEMP}/godot-smoke.log"
-          timeout --kill-after=10s "${GODOT_COMMAND_TIMEOUT_SECONDS:-600}s" \
-            godot --headless --path "$PROJECT_DIR" --script res://tools/smoke_flow.gd \
-            -- --progress-path user://smoke/progress.json 2>&1 | tee "${smoke_log}"
-          smoke_status="${PIPESTATUS[0]}"
-          if [ "${smoke_status}" -ne 0 ]; then
-            echo "Smoke flow exited with ${smoke_status}." >&2
-            exit "${smoke_status}"
-          fi
-          if ! grep -q "\[smoke\] ALL GREEN" "${smoke_log}"; then
-            echo "Smoke flow did not report ALL GREEN." >&2
-            exit 1
-          fi
-          if grep -E "^(SCRIPT ERROR|ERROR):" "${smoke_log}"; then
-            echo "Godot reported errors during the smoke flow." >&2
-            exit 1
-          fi
+      - name: Keep logs, journeys and screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: godot-qa-${{ github.sha }}
+          path: |
+            build/qa
+            build/e2e
+            build/rendered
+          retention-days: 3
+          if-no-files-found: error

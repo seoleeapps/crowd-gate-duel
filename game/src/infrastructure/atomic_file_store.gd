@@ -16,6 +16,9 @@ const BACKUP_SUFFIX: String = ".bak"
 
 ## 반환: OK 또는 실패한 단계의 Error
 static func write(path: String, data: Dictionary) -> Error:
+	var directory: Error = DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	if directory != OK:
+		return directory
 	var tmp_path: String = path + TMP_SUFFIX
 	var file: FileAccess = FileAccess.open(tmp_path, FileAccess.WRITE)
 	if file == null:

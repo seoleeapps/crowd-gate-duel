@@ -7,7 +7,6 @@ extends Control
 ## 사전 고지로 보여 주고, 오프라인이거나 오늘 상한을 다 쓰면 숨긴다(DEC-007).
 
 signal rematch_pressed
-signal ad_retry_pressed
 signal share_pressed
 signal home_pressed
 
@@ -16,16 +15,14 @@ var scene: Image
 ## { "feathers": int, "daily_first_win": bool, "band_before": int, "band_after": int }
 var reward: Dictionary = {}
 var tutorial: bool = false
-var ad_retries_left: int = 0
 var toast: Label
 
 
-func setup(session_in: DuelSession, scene_in: Image, reward_in: Dictionary, tutorial_in: bool, ad_retries_left_in: int) -> void:
+func setup(session_in: DuelSession, scene_in: Image, reward_in: Dictionary, tutorial_in: bool) -> void:
 	session = session_in
 	scene = scene_in
 	reward = reward_in
 	tutorial = tutorial_in
-	ad_retries_left = ad_retries_left_in
 
 
 func _ready() -> void:
@@ -57,8 +54,6 @@ func _ready() -> void:
 	if rewards != null:
 		column.add_child(rewards)
 
-	if _offers_ad_retry():
-		column.add_child(_ad_retry_block())
 	column.add_child(_buttons())
 	toast = _text("", 14, 500, Palette.INK_SOFT)
 	toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -83,10 +78,6 @@ func result_color() -> Color:
 	return Palette.TIE
 
 
-func _offers_ad_retry() -> bool:
-	return not tutorial and session.result() == DuelEngine.RESULT_B_WIN and ad_retries_left > 0
-
-
 func _scene_view() -> Control:
 	var frame: PanelContainer = PanelContainer.new()
 	var box: StyleBoxFlat = UiTheme.pill(Palette.PANEL, 16.0, Palette.INK)
@@ -97,7 +88,7 @@ func _scene_view() -> Control:
 	var rect: TextureRect = TextureRect.new()
 	rect.custom_minimum_size = Vector2(0, 72 * Palette.DP)
 	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if scene != null and not scene.is_empty():
 		rect.texture = ImageTexture.create_from_image(scene_crop(scene))
 	frame.add_child(rect)
@@ -107,12 +98,8 @@ func _scene_view() -> Control:
 
 ## 충돌 장면에서 정상 부근만 잘라 낸다. 공유 카드도 같은 잘라 낸 장면을 쓴다.
 static func scene_crop(image: Image) -> Image:
-	var w: int = image.get_width()
-	var h: int = image.get_height()
-	# 위쪽 진행 리본과 일시정지 버튼은 장면이 아니므로 잘라 낸다.
-	var top: int = mini(int(float(w) / 360.0 * DuelScreen.RIBBON_DP), h - 1)
-	var crop_h: int = mini(h - top, int(float(w) * 0.9))
-	return image.get_region(Rect2i(0, top, w, crop_h))
+	return image
+
 
 
 func _result_word() -> Label:
@@ -194,23 +181,10 @@ func _reward_line() -> Label:
 		parts.append(tr("NEW_ITEM"))
 	if parts.is_empty():
 		return null
-	var label: Label = _text(" · ".join(parts), 16, 700, Palette.INK)
+	var label: Label = _text(", ".join(parts), 16, 700, Palette.INK)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return label
-
-
-func _ad_retry_block() -> Control:
-	var column: VBoxContainer = VBoxContainer.new()
-	column.add_theme_constant_override("separation", int(6 * Palette.DP))
-	var notice: Label = _text(tr("AD_RETRY_NOTICE"), 13, 500, Palette.INK_SOFT)
-	notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(notice)
-	var button: Button = Button.new()
-	UiTheme.secondary_button(button, "%s · %s" % [tr("AD_RETRY"), tr("AD_RETRY_LEFT") % ad_retries_left])
-	button.pressed.connect(func() -> void: ad_retry_pressed.emit())
-	column.add_child(button)
-	return column
 
 
 func _buttons() -> Control:

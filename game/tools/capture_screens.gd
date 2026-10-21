@@ -163,7 +163,7 @@ func _capture_result() -> void:
 	await RenderingServer.frame_post_draw
 	var scene: Image = _viewport.get_texture().get_image()
 	var result: ResultScreen = ResultScreen.new()
-	result.setup(session, scene, {"feathers": 30, "daily_first_win": true, "band_before": 3, "band_after": 3}, false, 3)
+	result.setup(session, scene, {"feathers": 30, "daily_first_win": true, "band_before": 3, "band_after": 3}, false)
 	await _show(result)
 	await create_timer(0.3).timeout
 	await _save("result")
@@ -171,7 +171,7 @@ func _capture_result() -> void:
 
 func _capture_home() -> void:
 	var home: HomeScreen = HomeScreen.new()
-	home.setup(3, 245, true)
+	home.setup(3, 245)
 	await _show(home)
 	await create_timer(0.3).timeout
 	await _save("home")

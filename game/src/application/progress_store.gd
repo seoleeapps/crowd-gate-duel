@@ -1,14 +1,14 @@
 class_name ProgressStore
 extends RefCounted
-## 로컬 진행 저장. 대역·전적·깃털, 진행 중이던 판, 업로드를 기다리는 내 기록 1건을 담는다.
+## 오프라인 진행 저장. 전적, 재화, 튜토리얼과 진행 중인 봇 대국을 보존한다.
 ##
 ## 저장은 `AtomicFileStore` 로 원자적으로 쓰고 손상 시 직전 스냅샷으로 복구한다(02 저장 계약).
 ## 이 클라이언트보다 새 버전으로 저장된 파일을 만나면 진행을 지우지 않고 읽기 전용으로 연다(06).
 
-const SCHEMA_VERSION: int = 1
+const SCHEMA_VERSION: int = 2
 const DEFAULT_PATH: String = "user://progress.json"
 
-## 05 재화 표. 원격 설정으로 조정 가능한 값이지만 원격 설정은 아직 목 경계다.
+## 오프라인 보상 표.
 const FEATHERS_WIN: int = 10
 const FEATHERS_LOSS: int = 3
 const FEATHERS_DRAW: int = 5
@@ -16,8 +16,6 @@ const FEATHERS_DAILY_FIRST_WIN: int = 20
 ## 대역 n 을 여는 누적 승수. 대역은 내려가지 않는다(05 악용 경로).
 const BAND_UNLOCK_WINS: Array[int] = [0, 3, 15, 40, 80]
 const FEATHERS_ONBOARDING: int = 30
-## 보상형 광고 재도전 일 상한(DEC-007). 판당 1회는 결과 화면이 지킨다.
-const AD_RETRY_DAILY_CAP: int = 3
 
 var path: String
 var data: Dictionary = {}
@@ -41,8 +39,9 @@ static func defaults() -> Dictionary:
 		"feathers": 0,
 		"daily_first_win_date": "",
 		"onboarding_done": false,
-		"ad_retry_date": "",
-		"ad_retry_count": 0,
+		"tutorial_version": 0,
+		"tutorial_step": 0,
+		"gate_lessons": [],
 		"unlocked": [],
 		"equipped": {
 			"flag": Cosmetics.DEFAULTS[Cosmetics.Slot.FLAG],
@@ -51,8 +50,6 @@ static func defaults() -> Dictionary:
 		},
 		"settings": default_settings(),
 		"in_progress": {},
-		"pending_upload": {},
-		"pending_clear": false,
 	}
 
 
@@ -71,6 +68,7 @@ static func default_settings() -> Dictionary:
 
 func read() -> void:
 	var loaded: Dictionary = AtomicFileStore.read(path)
+	read_only = false
 	loaded_from = str(loaded["source"])
 	var raw: Dictionary = loaded["data"]
 	data = defaults()
@@ -84,6 +82,13 @@ func read() -> void:
 	var settings: Dictionary = default_settings()
 	settings.merge(raw.get("settings", {}), true)
 	data["settings"] = settings
+	for obsolete: String in ["pending_upload", "pending_clear", "ad_retry_date", "ad_retry_count"]:
+		data.erase(obsolete)
+	# 원격 기록 대국은 새 봇으로 바꾸어 이어도 같은 판이 되지 않는다.
+	# 미완료 대국만 비우고 전적, 재화와 로컬 재생 규약은 보존한다.
+	var pending_session: Dictionary = data["in_progress"].get("session", {})
+	if str(pending_session.get("opponent", {}).get("kind", "")) == "record":
+		data["in_progress"] = {}
 	data["schema_version"] = SCHEMA_VERSION
 
 
@@ -142,30 +147,31 @@ func apply_result(result: int, today: String) -> Dictionary:
 
 
 func onboarding_done() -> bool:
-	return bool(data["onboarding_done"])
+	return int(data["tutorial_version"]) >= Onboarding.VERSION
 
+func tutorial_step() -> int:
+	return clampi(int(data["tutorial_step"]), 0, Onboarding.ANSWERS.size())
 
-## 온보딩은 연습이라 전적과 대역에 넣지 않는다. 첫 해금 경험을 위한 깃털만 준다(05 보상 일정).
+func set_tutorial_step(value: int) -> void:
+	data["tutorial_step"] = clampi(value, 0, Onboarding.ANSWERS.size())
+
+## onboarding_done은 구버전 완료 보상 지급 기록으로 남긴다.
 func complete_onboarding() -> int:
-	if onboarding_done():
+	data["tutorial_version"] = Onboarding.VERSION
+	data["tutorial_step"] = Onboarding.ANSWERS.size()
+	if bool(data["onboarding_done"]):
 		return 0
 	data["onboarding_done"] = true
 	data["feathers"] = feathers() + FEATHERS_ONBOARDING
 	grant(Cosmetics.ONBOARDING_REWARD)
 	return FEATHERS_ONBOARDING
 
+func lesson_seen(kind: Gate.Kind) -> bool:
+	return (data["gate_lessons"] as Array).has(Gate.kind_name(kind))
 
-func ad_retries_left(today: String) -> int:
-	if str(data["ad_retry_date"]) != today:
-		return AD_RETRY_DAILY_CAP
-	return maxi(0, AD_RETRY_DAILY_CAP - int(data["ad_retry_count"]))
-
-
-func use_ad_retry(today: String) -> void:
-	if str(data["ad_retry_date"]) != today:
-		data["ad_retry_date"] = today
-		data["ad_retry_count"] = 0
-	data["ad_retry_count"] = int(data["ad_retry_count"]) + 1
+func mark_lesson(kind: Gate.Kind) -> void:
+	if not lesson_seen(kind):
+		(data["gate_lessons"] as Array).append(Gate.kind_name(kind))
 
 
 func is_unlocked(id: String) -> bool:
@@ -240,19 +246,3 @@ func in_progress() -> Dictionary:
 	return data["in_progress"]
 
 
-## 업로드 대기 기록은 1건만 둔다. 원격 문서가 덮어쓰기라 가장 최근 기록만 의미가 있다.
-func set_pending_upload(record: Dictionary) -> void:
-	data["pending_upload"] = record
-
-
-func pending_upload() -> Dictionary:
-	return data["pending_upload"]
-
-
-## 원격 기록 문서를 지워야 하는데 아직 못 지웠으면 true. 연결될 때까지 남는다.
-func set_pending_clear(value: bool) -> void:
-	data["pending_clear"] = value
-
-
-func pending_clear() -> bool:
-	return bool(data["pending_clear"])

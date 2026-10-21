@@ -1,0 +1,13 @@
+{
+  "decision": "DEC-019",
+  "interstitial": {
+    "enabled": true,
+    "cooldown_after_close_ms": 45000,
+    "placement": "normal_result",
+    "first_normal_duel": true,
+    "session_cap": null,
+    "daily_cap": null
+  },
+  "iap": false,
+  "rewarded": false
+}

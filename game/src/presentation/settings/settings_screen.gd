@@ -5,6 +5,8 @@ extends Control
 
 signal back_pressed
 signal settings_changed(key: String)
+signal tutorial_pressed
+signal privacy_options_pressed
 signal reset_confirmed
 
 const TOGGLES: Array[String] = ["commit_extended", "vibration", "sound", "music", "colorblind_assist", "reduce_shake"]
@@ -21,6 +23,9 @@ const TOGGLE_OFF: Texture2D = preload("res://assets/art/toggle_off.svg")
 const LOCALES: Array[String] = ["", "en", "ko"]
 const LOCALE_LABELS: Array[String] = ["LANG_SYSTEM", "LANG_EN", "LANG_KO"]
 
+var privacy_required: bool = false
+var ad_port: InterstitialAdPort
+var _privacy_option: Button
 var store: ProgressStore
 
 
@@ -65,9 +70,27 @@ func _ready() -> void:
 		languages.add_child(button)
 	list.add_child(languages)
 
+	var tutorial: Button = Button.new()
+	UiTheme.secondary_button(tutorial, tr("SET_TUTORIAL"))
+	tutorial.pressed.connect(func() -> void: tutorial_pressed.emit())
+	list.add_child(tutorial)
+	_privacy_option = Button.new()
+	UiTheme.secondary_button(_privacy_option, tr("SET_PRIVACY_OPTIONS"))
+	_privacy_option.pressed.connect(func() -> void: privacy_options_pressed.emit())
+	list.add_child(_privacy_option)
+	if ad_port != null:
+		ad_port.consent_changed.connect(_update_privacy_option)
+	_update_privacy_option()
 	var privacy: Button = Button.new()
 	UiTheme.secondary_button(privacy, tr("SET_PRIVACY"))
-	privacy.pressed.connect(func() -> void: add_child(ConfirmSheet.new(tr("PRIVACY_TEXT"))))
+	privacy.pressed.connect(func() -> void:
+		var sheet: ConfirmSheet = ConfirmSheet.new(tr("PRIVACY_TEXT"), tr("READ_POLICY"))
+		sheet.confirmed.connect(func() -> void:
+			var prefix: String = "" if TranslationServer.get_locale().begins_with("ko") else "en/"
+			OS.shell_open("https://www.seorilabs.com/%sapps/crowd-gate-duel/privacy/" % prefix)
+		)
+		add_child(sheet)
+	)
 	list.add_child(privacy)
 	var reset: Button = Button.new()
 	UiTheme.secondary_button(reset, tr("SET_RESET"))
@@ -116,3 +139,7 @@ func _label(text: String, size_dp: int, weight: int, color: Color) -> Label:
 	label.add_theme_font_size_override("font_size", int(size_dp * Palette.DP))
 	label.add_theme_color_override("font_color", color)
 	return label
+
+func _update_privacy_option() -> void:
+	if _privacy_option != null:
+		_privacy_option.visible = ad_port.privacy_required if ad_port != null else privacy_required

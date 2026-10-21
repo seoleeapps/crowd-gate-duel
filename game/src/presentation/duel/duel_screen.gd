@@ -10,6 +10,8 @@ extends Control
 
 signal segment_presented(index: int)
 signal committed(step: Dictionary)
+signal tutorial_accepted(next_step: int)
+signal checkpoint
 signal segment_resolved
 signal finished(scene: Image)
 
@@ -22,6 +24,7 @@ const HOLD_SECONDS: float = 0.45
 var session: DuelSession
 var tutorial: bool = false
 ## 아래는 화면을 붙이기 전에 화면 전환 루트가 채운다. 비워 두면 소리 없이 기본 모습으로 동작한다.
+var lesson_store: ProgressStore = null
 var feedback: Feedback = null
 var reduce_shake: bool = false
 var colorblind_assist: bool = false
@@ -29,6 +32,8 @@ var my_color: Color = Palette.MINE
 var my_flag: String = "chevron"
 ## 앱이 백그라운드로 가거나 창이 포커스를 잃으면 일시정지한다. 화면 캡처 도구만 끈다.
 var pause_when_backgrounded: bool = true
+## 시계 경계. 비어 있으면 실제 프레임 시간, 개발 여정은 고정 밀리초를 주입한다.
+var commit_clock: Callable
 
 var world: WorldView
 var band: GateBand
@@ -63,6 +68,7 @@ func _ready() -> void:
 	add_child(timer)
 	_captions = CaptionLayer.new()
 	add_child(_captions)
+	_captions.layout_changed.connect(_on_caption_layout)
 	_flash = ColorRect.new()
 	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_flash.color = Color(0, 0, 0, 0)
@@ -87,7 +93,7 @@ func _notification(what: int) -> void:
 func _process(delta: float) -> void:
 	if not _waiting_commit:
 		return
-	_ms_carry += delta * 1000.0
+	_ms_carry += float(commit_clock.call(delta)) if commit_clock.is_valid() else delta * 1000.0
 	var ms: int = int(_ms_carry)
 	_ms_carry -= float(ms)
 	var before: int = session.remaining_ms
@@ -112,6 +118,7 @@ func _layout() -> void:
 	# 게이트 띠 높이는 그대로 지킨다(03 반응형 기기 매트릭스).
 	var world_top: float = ribbon_top + ribbon_h if size.y / maxf(size.x, 1.0) < 2.0 else 0.0
 	world.position = Vector2(0, world_top)
+	world.top_clearance = maxf(0, ribbon_top + ribbon_h - world_top) + 8 * dp
 	world.size = Vector2(size.x, world_bottom - world_top)
 	ribbon.position = Vector2(0, ribbon_top)
 	ribbon.size = Vector2(size.x, ribbon_h)
@@ -123,16 +130,23 @@ func _layout() -> void:
 	_pause.size = size
 	# 자막 층은 리본 아래부터. 핵심 자막이 탭을 받는 동안에도 일시정지 버튼은 눌린다.
 	_captions.position = Vector2(0, ribbon_top + ribbon_h)
-	_captions.size = Vector2(size.x, size.y - ribbon_top - ribbon_h)
+	_captions.size = Vector2(size.x, world_bottom - ribbon_top - ribbon_h)
 
 
-## 노치·펀치홀 아래로 리본을 내린다. 화면 좌표를 이 컨트롤의 좌표로 바꿔 쓴다.
+## 모바일 노치·펀치홀 아래로 리본을 내린다. 화면 픽셀을 이 컨트롤의 좌표로 바꿔 쓴다.
 func _safe_top() -> float:
 	var safe: Rect2i = DisplayServer.get_display_safe_area()
 	var screen: Vector2i = DisplayServer.screen_get_size()
+	return safe_top_inset(OS.get_name(), safe, screen, size.y)
+
+
+static func safe_top_inset(platform: String, safe: Rect2i, screen: Vector2i, view_height: float) -> float:
+	# 데스크톱 fallback은 모니터 작업 영역의 절대 좌표다. 창 내부 여백이 아니다.
+	if platform != "Android" and platform != "iOS":
+		return 0.0
 	if screen.y <= 0 or safe.size.y <= 0:
 		return 0.0
-	return maxf(0.0, float(safe.position.y) * size.y / float(screen.y))
+	return maxf(0.0, float(safe.position.y) * view_height / float(screen.y))
 
 
 func _run() -> void:
@@ -154,15 +168,24 @@ func _run() -> void:
 		var guided: int = Onboarding.guided_pick(session.segment_index) if tutorial else -1
 		var caption: Dictionary = Onboarding.caption(session.segment_index) if tutorial else {}
 		segment_presented.emit(session.segment_index)
+		checkpoint.emit()
 		if not str(caption.get("before", "")).is_empty():
 			_captions.show_caption(caption["before"], str(caption.get("icon", "")), false)
 		await band.present(session.current_gates(), guided).finished
+		if tutorial:
+			band.preview_opponent(Onboarding.OPPONENT_PICKS[session.segment_index])
+		else:
+			await _show_gate_lessons()
 		_ms_carry = 0.0
 		_waiting_commit = true
 		var step: Dictionary = await committed
 		_captions.hide_caption()
 		await _resolve(step, caption)
-		segment_resolved.emit()
+		if tutorial and not Onboarding.accepted(step):
+			Onboarding.retry(session)
+			world.set_standing(session.crowd_me, session.crowd_opp, _progress(), false)
+		else:
+			segment_resolved.emit()
 	await _finale()
 
 
@@ -179,13 +202,15 @@ func _on_step(step: Dictionary) -> void:
 	_feel("lock", 20, 0.3)
 	band.lock(int(step["pick_me"]))
 	timer.set_time(0, session.commit_ms)
+	if tutorial and Onboarding.accepted(step):
+		tutorial_accepted.emit(session.segment_index + 1)
 	committed.emit(step)
 
 
 ## 공개 → 사건 연출 → 무리 변화. 한 구간의 해소 연출은 1.5초 안쪽이다(02 경험 타임라인).
 ## caption 은 온보딩 자막 설정이다. focus 면 해소를 느리게 보여 주고 겹친 칸을 강조한 뒤 자막에서 멈춘다.
 func _resolve(step: Dictionary, caption: Dictionary = {}) -> void:
-	var focus: bool = bool(caption.get("focus", false))
+	var focus: bool = tutorial and bool(step["split"])
 	if focus:
 		_saved_time_scale = Engine.time_scale
 		Engine.time_scale = _saved_time_scale * 0.5
@@ -233,11 +258,12 @@ func _resolve(step: Dictionary, caption: Dictionary = {}) -> void:
 		band.pulse(int(step["pick_me"]))
 	await world.set_standing(int(step["me"]), int(step["opp"]), _progress(), true).finished
 	_restore_time_scale()
-	var after: String = str(caption.get("after", ""))
-	if not after.is_empty():
-		await _captions.show_caption(after, str(caption.get("icon", "")), focus)
-		if not focus:
-			await get_tree().create_timer(2.2).timeout
+	if tutorial:
+		var after: String = str(caption.get("after", ""))
+		if not Onboarding.accepted(step):
+			after = "ONB_RETRY_BEHIND" if session.segment_index == 4 else "ONB_RETRY_AHEAD"
+		var numbers: String = "%d → %d   :   %d → %d" % [step["before_me"], step["me"], step["before_opp"], step["opp"]]
+		await _captions.show_caption(after, str(caption.get("icon", "")), true, numbers)
 		_captions.hide_caption()
 	await get_tree().create_timer(HOLD_SECONDS).timeout
 
@@ -263,18 +289,23 @@ func _finale() -> void:
 	await get_tree().process_frame
 	var scene: Image = null
 	if DisplayServer.get_name() != "headless":
-		scene = get_viewport().get_texture().get_image()
+		var area: Rect2 = world.get_global_rect()
+		var top: float = maxf(area.position.y, ribbon.get_global_rect().end.y)
+		area.position.y = top
+		area.size.y = band.get_global_rect().position.y - top
+		scene = get_viewport().get_texture().get_image().get_region(Rect2i(area))
 	await fade.finished
 	await get_tree().create_timer(0.6).timeout
 	finished.emit(scene)
 
 
 func _shake() -> void:
+	var origin: Vector2 = world.position
 	var tween: Tween = create_tween()
 	for i: int in range(4):
 		var offset: Vector2 = Vector2(8 if i % 2 == 0 else -8, 4 if i < 2 else -4) * Palette.DP
-		tween.tween_property(world, "position", offset, 0.04)
-	tween.tween_property(world, "position", Vector2.ZERO, 0.05)
+		tween.tween_property(world, "position", origin + offset, 0.04)
+	tween.tween_property(world, "position", origin, 0.05)
 
 
 func _exit_tree() -> void:
@@ -299,6 +330,7 @@ func _open_pause() -> void:
 	if _pause.visible or session == null:
 		return
 	session.pause()
+	checkpoint.emit()
 	_pause.open()
 
 
@@ -325,3 +357,28 @@ func _opp_label() -> String:
 		CrowdView.Badge.PRACTICE:
 			return tr("CHIP_PRACTICE")
 	return tr("CHIP_OPP")
+
+## 처음 등장한 특수 게이트는 입력과 시계를 멈추고 실제 정수 판정 예시를 보여 준다.
+func _show_gate_lessons() -> void:
+	if lesson_store == null:
+		return
+	for kind: Gate.Kind in [Gate.Kind.STEAL, Gate.Kind.SHIELD]:
+		if lesson_store.lesson_seen(kind):
+			continue
+		var found: bool = session.current_gates().any(func(gate: Gate) -> bool: return gate.kind == kind)
+		if not found:
+			continue
+		session.pause()
+		var example: Dictionary = GateLessons.example(session.current_gates(), kind)
+		await _captions.show_caption(tr(example["caption"]) % int(example["percent"]), "steal" if kind == Gate.Kind.STEAL else "shield", true, example["numbers"])
+		_captions.hide_caption()
+		lesson_store.mark_lesson(kind)
+		lesson_store.write()
+		if not _pause.visible:
+			session.resume()
+
+func _on_caption_layout() -> void:
+	var reserved: float = 0.0
+	if _captions.visible:
+		reserved = world.get_global_rect().end.y - _captions._card.get_global_rect().position.y + 8 * Palette.DP
+	world.reserve_bottom(reserved)

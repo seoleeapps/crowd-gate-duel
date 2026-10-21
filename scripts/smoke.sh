@@ -1,24 +1,16 @@
 #!/usr/bin/env bash
-# 앱 흐름 스모크: 온보딩 → 결과 → 홈 → 대국 → 결과. 사용자 저장과 분리된 경로를 쓴다.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT/scripts/_godot.sh"
-
-LOG_DIR="$(mktemp -d)"
-trap 'rm -rf "$LOG_DIR"' EXIT
-
-echo "[smoke] 임포트 패스"
-import_project "$LOG_DIR/import.log"
-
-echo "[smoke] 첫 세션 흐름"
-set +e
-run_godot "$LOG_DIR/smoke.log" --headless --path "$ROOT/game" --script res://tools/smoke_flow.gd \
-  -- --progress-path user://smoke/progress.json
-STATUS=$?
-set -e
-assert_no_godot_errors "$LOG_DIR/smoke.log" || STATUS=1
-if ! grep -q "\[smoke\] ALL GREEN" "$LOG_DIR/smoke.log"; then
-  echo "[smoke] ALL GREEN 표시가 없습니다."
-  STATUS=1
-fi
-exit "$STATUS"
+OUT="${E2E_OUT:-$ROOT/build/e2e}"
+mkdir -p "$OUT"
+import_project "$OUT/import.log"
+args=(--headless --audio-driver Dummy)
+capture_args=()
+if [ "${E2E_CAPTURE:-0}" = 1 ]; then args=(--audio-driver Dummy); capture_args=(--capture); fi
+run_godot "$OUT/run.log" "${args[@]}" --path "$ROOT/game" --script res://tools/e2e/journey.gd -- \
+  --progress-path "user://e2e/${E2E_RUN_ID:-local}/progress.json" --out "$OUT" \
+  --locale "${E2E_LOCALE:-ko}" --size "${E2E_SIZE:-1080x2340}" "${capture_args[@]}"
+assert_no_godot_errors "$OUT/run.log"
+grep -Fq '[e2e] ALL GREEN' "$OUT/run.log"
+python3 "$ROOT/scripts/check_e2e_coverage.py" --inventory "$ROOT/docs/qa/feature-inventory.json" --journey "$OUT/journey.json"

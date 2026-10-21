@@ -6,8 +6,11 @@ config_version=5
 
 [application]
 
-config/name="갈림길 군중 대전"
-config/description="동시 비공개 게이트 선택으로 겨루는 비동기 1:1 대전"
+config/name="Crowd Gate Duel"
+config/name_localized={
+"ko": "갈림길 군중 대전"
+}
+config/description="Read the bot, choose a gate, and grow your crowd."
 config/version="0.1.0"
 run/main_scene="res://src/presentation/app_root.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
