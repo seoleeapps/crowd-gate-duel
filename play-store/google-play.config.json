@@ -43,12 +43,12 @@
     ]
   },
   "contentDeclarations": {
-    "dataSafety": "확정 필요: 실제 광고 SDK 처리에 맞춰 Console 신고",
-    "contentRating": "확정 필요: IARC 설문과 지역별 등급",
+    "dataSafety": "completed-in-play-console:2026-10-21; GMA25.5.0 approximate location, app interactions, diagnostics and device IDs collected/shared for ads, analytics and fraud prevention; TLS; no accounts",
+    "contentRating": "completed-in-play-console:2026-10-21 09:53 KST; IARC complete; GRAC ALL, ESRB10+, PEGI7; certificate ID not displayed",
     "targetAudience": "general-audience-not-children; ages 13 and above",
     "ads": "yes",
     "koreaDistribution": "yes",
-    "koreaGameRating": "확정 필요: IARC 및 한국 배포 요건 확인"
+    "koreaGameRating": "completed-in-play-console:2026-10-21; IARC GRAC ALL; no 19+ or gambling; no additional GRAC requirement per Google country requirements"
   },
   "release": {
     "releaseNotes": {
