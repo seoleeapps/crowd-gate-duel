@@ -21,7 +21,7 @@ jobs:
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
         with:
           cmdline-tools-version: '12266719' # 16.0, JDK 17
-          packages: 'platforms;android-36 build-tools;36.0.0'
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
           log-accepted-android-sdk-licenses: false
       - name: Compile and inspect Android boundary
         run: |
