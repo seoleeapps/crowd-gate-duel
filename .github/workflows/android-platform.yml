@@ -30,7 +30,9 @@ jobs:
         working-directory: ${{ runner.temp }}/governance
         run: npm ci --ignore-scripts --no-audit
       - name: Load release verifier with installed dependencies
-        run: node --input-type=module -e 'await import(process.argv[1])' "$RUNNER_TEMP/governance/scripts/release/verify-development-evidence.mjs"
+        env:
+          VERIFIER_MODULE: ${{ runner.temp }}/governance/scripts/release/verify-development-evidence.mjs
+        run: node --input-type=module -e 'await import(process.env.VERIFIER_MODULE)'
       - name: Install Android SDK tools and API 36
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
         with:
