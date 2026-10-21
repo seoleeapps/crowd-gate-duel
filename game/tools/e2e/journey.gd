@@ -209,7 +209,8 @@ func _run() -> void:
 	app.feedback.stop_all()
 	await e2e.unmount(main)
 	var status: int = e2e.finish({"sourceSha": OS.get_environment("GITHUB_SHA"), "locale": locale,
-		"focus": "fixed-foreground", "commitClock": "16ms-per-frame", "audio": "Dummy"})
+		"focus": "fixed-foreground", "commitClock": "16ms-per-frame", "audio": "Dummy",
+		"safeArea": "mobile-cutout-only"})
 	print("[e2e] ALL GREEN" if status == 0 else "[e2e] FAILED")
 	quit(status)
 

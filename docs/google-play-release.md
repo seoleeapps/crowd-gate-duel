@@ -20,6 +20,8 @@
 
 ## 외부 상태와 남은 항목
 
+사용자가 승인한 네 번째 독립 검수는 ca982a89에서 단위267개와 headless, 영어 짧은 화면, 한국어 긴 화면을 통과했으나 태블릿 복원 뒤 화면 이탈과 빈 결과 및 공유 장면, 재학습 미완료로 실패했다. [실패 원본](design/2026-10-21-offline-play-launch/iteration-4-result.md)은 보존했다. 데스크톱 모니터 좌표를 모바일 노치 여백으로 계산하던 경로를 수정했고 작성자의 단위275개와 태블릿279검사는 통과했다. 최종 후보의 CI는 실제 결과를 따로 기록한다. [다섯 번째 독립 검수](design/2026-10-21-offline-play-launch/iteration-5-proposal.md)는 승인 전이며 최종 독립 검수 통과로 주장하지 않는다.
+
 Google 전용 Edge의 등록된 인증 파일로 자동 로그인을 시도했으나 provider_blocked였다. 사용자 확인용 로그인 창을 열었고 완료를 기다린다. Seolee Apps 계정의 이번 세션 소유권은 아직 실제 확인하지 못했다. 다른 계정이나 인증으로 우회하지 않는다.
 
 운영 AdMob 앱 ID와 전면광고 ID는 아직 확인되지 않았다. game/config/android.json의 운영 필드는 비어 있으며 scripts/check_release.py가 출시를 차단한다. 앱별 업로드 키도 아직 카탈로그에 없다. 공유 게시 인증은 기존 shared/google-play/publisher를 쓰되 현재 계정과 패키지 접근을 확인한 뒤에만 사용한다.

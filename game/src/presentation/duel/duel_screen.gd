@@ -133,13 +133,20 @@ func _layout() -> void:
 	_captions.size = Vector2(size.x, world_bottom - ribbon_top - ribbon_h)
 
 
-## 노치·펀치홀 아래로 리본을 내린다. 화면 좌표를 이 컨트롤의 좌표로 바꿔 쓴다.
+## 모바일 노치·펀치홀 아래로 리본을 내린다. 화면 픽셀을 이 컨트롤의 좌표로 바꿔 쓴다.
 func _safe_top() -> float:
 	var safe: Rect2i = DisplayServer.get_display_safe_area()
 	var screen: Vector2i = DisplayServer.screen_get_size()
+	return safe_top_inset(OS.get_name(), safe, screen, size.y)
+
+
+static func safe_top_inset(platform: String, safe: Rect2i, screen: Vector2i, view_height: float) -> float:
+	# 데스크톱 fallback은 모니터 작업 영역의 절대 좌표다. 창 내부 여백이 아니다.
+	if platform != "Android" and platform != "iOS":
+		return 0.0
 	if screen.y <= 0 or safe.size.y <= 0:
 		return 0.0
-	return maxf(0.0, float(safe.position.y) * size.y / float(screen.y))
+	return maxf(0.0, float(safe.position.y) * view_height / float(screen.y))
 
 
 func _run() -> void:

@@ -51,4 +51,12 @@ static func run() -> TestBase:
 	focus_app.respect_platform_focus = focus_tracking_before
 	focus_app.in_foreground = focus_before
 	focus_app.free()
+	# 데스크톱 safe rect는 가상 데스크톱의 절대 좌표다. 창 안의 상단 여백으로 쓰지 않는다.
+	for platform: String in ["macOS", "Windows", "Linux", "Web"]:
+		var shifted_display: Rect2i = Rect2i(1920, 2160, 2560, 1440)
+		t.check_eq(DuelScreen.safe_top_inset(platform, shifted_display, Vector2i(2560, 1440), 2160.0), 0.0, "%s 모니터 원점을 여백으로 적용하지 않는다" % platform)
+	t.check_eq(DuelScreen.safe_top_inset("macOS", Rect2i(-1920, -1080, 1920, 1080), Vector2i(1920, 1080), 2160.0), 0.0, "음수 모니터 원점도 여백 없음")
+	t.check_eq(DuelScreen.safe_top_inset("Android", Rect2i(0, 100, 1080, 2300), Vector2i(1080, 2400), 2160.0), 90.0, "Android 노치의 화면 픽셀을 화면 안 좌표로 변환")
+	t.check_eq(DuelScreen.safe_top_inset("iOS", Rect2i(0, 60, 1200, 2340), Vector2i(1200, 2400), 2160.0), 54.0, "iOS 노치 여백 보존")
+	t.check_eq(DuelScreen.safe_top_inset("Android", Rect2i(), Vector2i.ZERO, 2160.0), 0.0, "화면 정보가 없으면 여백 없음")
 	return t
