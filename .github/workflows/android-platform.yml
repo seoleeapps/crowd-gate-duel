@@ -17,6 +17,20 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.16.0'
+          check-latest: false
+          package-manager-cache: false
+      - name: Fetch release verifier
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh repo clone seorilabs/.github "$RUNNER_TEMP/governance" -- --depth 1
+      - name: Install verifier dependencies
+        working-directory: ${{ runner.temp }}/governance
+        run: npm ci --ignore-scripts --no-audit
+      - name: Load release verifier with installed dependencies
+        run: node --input-type=module -e 'await import(process.argv[1])' "$RUNNER_TEMP/governance/scripts/release/verify-development-evidence.mjs"
       - name: Install Android SDK tools and API 36
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
         with:

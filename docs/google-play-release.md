@@ -47,4 +47,4 @@ v1.0.0 태그는1255be70ce86932160928bbfe91d40a85e31fdbb, versionCode1에 고정
 
 Android 도구를 워크플로가 직접 설치하고 PR Android 검사에서도 같은 도구의 실행을 확인하도록 보완한다. 앱 소스와 제품 동작은 바꾸지 않는다. 이 수정은 첫 출시 구현에서 발견한 빌드 환경 결함의 범위다. 다음 후보는 새 태그를 사용하며 기존 태그를 옮기지 않는다.
 
-새 임시 checkout에서 중앙 검증기의 의존성이 없는 상태는 `ERR_MODULE_NOT_FOUND`로 실패하고 `npm ci --ignore-scripts --no-audit` 뒤 실제 모듈 import가 통과하는 것을 확인했다. 출시 워크플로에도 Node24.16.0과 검증기 의존성 설치를 명시했다. 로컬에 이미 설치된 모듈이 CI의 새 checkout에서도 존재한다고 가정하지 않는다.
+새 임시 checkout에서 중앙 검증기의 의존성이 없으면 `ERR_MODULE_NOT_FOUND`로 실패했다. `npm ci --prefix` 설치도 잠금 파일 검사에서 실패했으며, 중앙 checkout을 작업 디렉터리로 지정한 `npm ci --ignore-scripts --no-audit`와 실제 검증기 모듈 import는 통과했다. 설치 통과를 먼저 기록했던 문장은 이 실행 결과로 정정했다. 출시 워크플로에 Node24.16.0과 같은 작업 디렉터리의 의존성 설치를 명시했다.
