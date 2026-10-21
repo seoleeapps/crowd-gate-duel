@@ -17,8 +17,31 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.16.0'
+          check-latest: false
+          package-manager-cache: false
+      - name: Fetch release verifier
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh repo clone seorilabs/.github "$RUNNER_TEMP/governance" -- --depth 1
+      - name: Install verifier dependencies
+        working-directory: ${{ runner.temp }}/governance
+        run: npm ci --ignore-scripts --no-audit
+      - name: Load release verifier with installed dependencies
+        env:
+          VERIFIER_MODULE: ${{ runner.temp }}/governance/scripts/release/verify-development-evidence.mjs
+        run: node --input-type=module -e 'await import(process.env.VERIFIER_MODULE)'
+      - name: Install Android SDK tools and API 36
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
+        with:
+          cmdline-tools-version: '12266719' # 16.0, JDK 17
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
       - name: Compile and inspect Android boundary
         run: |
+          sdkmanager --version
           native/android/crowd_gate_platform/gradlew -p native/android/crowd_gate_platform :plugin:assembleRelease :plugin:lintRelease --console=plain
       - uses: actions/upload-artifact@v7
         if: always()

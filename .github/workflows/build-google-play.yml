@@ -18,6 +18,17 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.16.0'
+          check-latest: false
+          package-manager-cache: false
+      - name: Install Android SDK tools and API 36
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
+        with:
+          cmdline-tools-version: '12266719' # 16.0, JDK 17
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
       - name: Verify trusted tag before secrets
         shell: bash
         run: |
@@ -40,12 +51,11 @@ jobs:
           unzip -q "$RUNNER_TEMP/templates.zip" -d "$RUNNER_TEMP"
           mkdir -p "$HOME/.local/share/godot/export_templates/$GODOT_VERSION.$GODOT_STATUS"
           cp -R "$RUNNER_TEMP/templates/." "$HOME/.local/share/godot/export_templates/$GODOT_VERSION.$GODOT_STATUS/"
-          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
           curl -fsSL https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar -o "$RUNNER_TEMP/bundletool.jar"
           echo "a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29  $RUNNER_TEMP/bundletool.jar" | sha256sum --check
           printf '#!/usr/bin/env bash\nexec java -jar "%s/bundletool.jar" "$@"\n' "$RUNNER_TEMP" > "$RUNNER_TEMP/godot/bundletool"
           chmod +x "$RUNNER_TEMP/godot/bundletool"
-      - name: Require current development evidence
+      - name: Download development evidence and verifier
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -53,6 +63,15 @@ jobs:
           set -euo pipefail
           gh release download "$GITHUB_REF_NAME" --pattern development-evidence.google-play.before-build.json --dir "$RUNNER_TEMP/evidence"
           gh repo clone seorilabs/.github "$RUNNER_TEMP/governance" -- --depth 1
+      - name: Install verifier dependencies
+        working-directory: ${{ runner.temp }}/governance
+        run: npm ci --ignore-scripts --no-audit
+      - name: Require current development evidence
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
           node "$RUNNER_TEMP/governance/scripts/release/verify-development-evidence.mjs" \
             --repo "$GITHUB_REPOSITORY" --sha "$GITHUB_SHA" --tag "$GITHUB_REF_NAME" \
             --target google-play --phase before-build \
