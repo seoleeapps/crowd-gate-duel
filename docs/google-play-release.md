@@ -46,3 +46,5 @@ AdMob 앱과 전면광고를 만들고 운영 ID를 설정했다. app-ads.txt의
 v1.0.0 태그는1255be70ce86932160928bbfe91d40a85e31fdbb, versionCode1에 고정했다. 같은 SHA의 전체 CI39527023026 및 Android CI39527023064와 중앙 before-build L3 검사를 통과했다. [빌드39527740489](https://github.com/seoleeapps/crowd-gate-duel/actions/runs/39527740489)는 SDK 도구 준비에서 `sdkmanager: command not found`로 실패했다. 서명 키 단계는 미실행이고 AAB는 생성 및 업로드되지 않았다. 태그와 실패 로그는 보존했다.
 
 Android 도구를 워크플로가 직접 설치하고 PR Android 검사에서도 같은 도구의 실행을 확인하도록 보완한다. 앱 소스와 제품 동작은 바꾸지 않는다. 이 수정은 첫 출시 구현에서 발견한 빌드 환경 결함의 범위다. 다음 후보는 새 태그를 사용하며 기존 태그를 옮기지 않는다.
+
+새 임시 checkout에서 중앙 검증기의 의존성이 없는 상태는 `ERR_MODULE_NOT_FOUND`로 실패하고 `npm ci --ignore-scripts --no-audit` 뒤 실제 모듈 import가 통과하는 것을 확인했다. 출시 워크플로에도 Node24.16.0과 검증기 의존성 설치를 명시했다. 로컬에 이미 설치된 모듈이 CI의 새 checkout에서도 존재한다고 가정하지 않는다.

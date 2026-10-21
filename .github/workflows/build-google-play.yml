@@ -18,6 +18,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.16.0'
+          check-latest: false
+          package-manager-cache: false
       - name: Install Android SDK tools and API 36
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
         with:
@@ -58,6 +63,7 @@ jobs:
           set -euo pipefail
           gh release download "$GITHUB_REF_NAME" --pattern development-evidence.google-play.before-build.json --dir "$RUNNER_TEMP/evidence"
           gh repo clone seorilabs/.github "$RUNNER_TEMP/governance" -- --depth 1
+          npm ci --prefix "$RUNNER_TEMP/governance" --ignore-scripts --no-audit
           node "$RUNNER_TEMP/governance/scripts/release/verify-development-evidence.mjs" \
             --repo "$GITHUB_REPOSITORY" --sha "$GITHUB_SHA" --tag "$GITHUB_REF_NAME" \
             --target google-play --phase before-build \
